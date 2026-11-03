@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Cannelé StorageBox 3D viewer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    :root { --cream: #FBF1EE; --pink: #F6DADA; --cherry: #9E1B2B; --ink: #3A1E1E; --muted: #7A5A58; --line: #EBCACA;
+      --serif: 'Playfair Display', Georgia, serif; --mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace; --ease: cubic-bezier(.16,1,.3,1); }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--cream); color: var(--ink); font-family: var(--serif); }
+    button { font: inherit; color: inherit; cursor: pointer; }
+    :focus-visible { outline: 2px solid var(--cherry); outline-offset: 3px; }
+    .bar { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; padding: 4px 0 14px; }
+    .btn { border: 1px solid var(--ink); background: transparent; padding: 9px 16px; min-height: 40px; border-radius: 999px; font-family: var(--mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; }
+    .btn:hover { background: var(--ink); color: var(--cream); }
+    .btn.primary { background: var(--cherry); border-color: var(--cherry); color: #fff; }
+    .btn.primary:hover { background: #7E1422; }
+    .swatches { display: flex; gap: 8px; align-items: center; }
+    .swatches .lbl { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-right: 2px; }
+    .sw { width: 34px; height: 34px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--line); padding: 0; }
+    .sw[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--cherry); }
+    .hint { flex: 1 1 220px; text-align: right; margin: 0; font-style: italic; color: var(--muted); font-size: 16px; }
+    @media (max-width: 700px) { .hint { text-align: left; } }
+    .stage { position: relative; height: 620px; border-radius: 4px; overflow: hidden; background: radial-gradient(120% 90% at 50% 35%, #FFF7F5 0%, #F6DADA 70%, #EFC9C9 100%); cursor: grab; touch-action: none; }
+    .stage.grabbing { cursor: grabbing; }
+    @media (max-width: 700px) { .stage { height: 460px; } }
+    canvas { width: 100%; height: 100%; display: block; }
+    .tag { position: absolute; left: 18px; top: 16px; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--cherry); pointer-events: none; }
+    .name { position: absolute; left: 18px; bottom: 16px; pointer-events: none; }
+    .name b { display: block; font-size: clamp(22px, 2.6vw, 30px); font-weight: 700; color: var(--cherry); letter-spacing: .01em; }
+    .name span { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+    .help { position: absolute; right: 16px; bottom: 16px; font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; pointer-events: none; text-align: right; }
+    .fallback { position: absolute; inset: 0; display: none; place-items: center; text-align: center; padding: 24px; }
+    .fallback img { max-height: 80%; max-width: 80%; }
+    .no-gl .fallback { display: grid; }
+    .toast { position: absolute; left: 50%; top: 18px; transform: translate(-50%, -10px); background: var(--cherry); color: #fff; font-family: var(--mono); font-size: 12px; padding: 8px 14px; border-radius: 999px; opacity: 0; transition: opacity .3s, transform .3s; pointer-events: none; }
+    .toast.on { opacity: 1; transform: translate(-50%, 0); }
+  </style>
+</head>
+<body>
+  <div class="bar">
+    <button class="btn primary" type="button" id="lid">Open the lid</button>
+    <div class="swatches" role="group" aria-label="Colourway">
+      <span class="lbl">Colourway</span>
+      <button class="sw" type="button" data-c="jelly" aria-pressed="true" aria-label="Cherry jelly" style="background:#9E1B2B"></button>
+      <button class="sw" type="button" data-c="chocolate" aria-pressed="false" aria-label="Chocolate" style="background:#5A2E22"></button>
+      <button class="sw" type="button" data-c="vanilla" aria-pressed="false" aria-label="Vanilla" style="background:#EFDDBE"></button>
+      <button class="sw" type="button" data-c="strawberry" aria-pressed="false" aria-label="Strawberry" style="background:#E9A3AE"></button>
+      <button class="sw" type="button" data-c="pla" aria-pressed="false" aria-label="Printed PLA prototype" style="background:#F4EFE6"></button>
+    </div>
+    <button class="btn" type="button" id="reset">Reset view</button>
+    <p class="hint">Drag to turn it 360°. Scroll or pinch to zoom.</p>
+  </div>
+
+  <div class="stage" id="stage">
+    <canvas id="cv" aria-label="3D model of the Cannelé StorageBox. Drag to rotate."></canvas>
+    <span class="tag" id="tag">3D model · from my CAD file</span>
+    <div class="name"><b>Cannelé StorageBox</b><span id="cname">Cherry jelly</span></div>
+    <div class="help">Drag · rotate<br>Scroll · zoom</div>
+    <div class="fallback"><img src="../assets/img/cannele.webp" alt="Cannelé StorageBox render"></div>
+    <div class="toast" id="toast" role="status"></div>
+  </div>
+
+<script src="../assets/models/cannele-model.js"></script>
+<script>
+(function () {
+  var stage = document.getElementById('stage'), cv = document.getElementById('cv');
+  var gl = cv.getContext('webgl', { antialias: true, premultipliedAlpha: true, alpha: true });
+  if (!gl || !window.CANNELE_MODEL) { stage.classList.add('no-gl'); return; }
+
+  /* ---------- tiny matrix helpers (column-major) ---------- */
+  function persp(fov, a, n, f) { var t = 1 / Math.tan(fov / 2), nf = 1 / (n - f); return [t / a,0,0,0, 0,t,0,0, 0,0,(f + n) * nf,-1, 0,0,2 * f * n * nf,0]; }
+  function look(e, c, u) {
+    var z = norm([e[0]-c[0], e[1]-c[1], e[2]-c[2]]), x = norm(cross(u, z)), y = cross(z, x);
+    return [x[0],y[0],z[0],0, x[1],y[1],z[1],0, x[2],y[2],z[2],0, -dot(x,e),-dot(y,e),-dot(z,e),1];
+  }
+  function mul(a, b) { var o = new Array(16); for (var i = 0; i < 4; i++) for (var j = 0; j < 4; j++) { var s = 0; for (var k = 0; k < 4; k++) s += a[k * 4 + j] * b[i * 4 + k]; o[i * 4 + j] = s; } return o; }
+  function trans(x, y, z) { return [1,0,0,0, 0,1,0,0, 0,0,1,0, x,y,z,1]; }
+  function rotX(a) { var c = Math.cos(a), s = Math.sin(a); return [1,0,0,0, 0,c,s,0, 0,-s,c,0, 0,0,0,1]; }
+  function cross(a, b) { return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]]; }
+  function dot(a, b) { return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]; }
+  function norm(a) { var l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0]/l, a[1]/l, a[2]/l]; }
+
+  /* ---------- shaders: soft studio lighting ---------- */
+  var vs = 'attribute vec3 p; attribute vec3 n; uniform mat4 P, V, M; varying vec3 vn; varying vec3 vw; varying vec3 vl;' +
+    'void main(){ vec4 w = M * vec4(p,1.0); vw = w.xyz; vl = p; vn = mat3(M) * n; gl_Position = P * V * w; }';
+  var fs = 'precision highp float; varying vec3 vn; varying vec3 vw; varying vec3 vl; uniform vec3 col; uniform vec3 eye; uniform float spec; uniform float shin; uniform float alpha; uniform float shadow; uniform float zones; uniform vec3 cream; uniform vec3 cherry;' +
+    'void main(){ if (shadow > 0.5) { float d = length(vl.xy) / 70.0; float a = (1.0 - smoothstep(0.15, 1.0, d)) * 0.32; gl_FragColor = vec4(vec3(0.42,0.18,0.20) * a, a); return; }' +
+    ' vec3 N = normalize(vn); vec3 E = normalize(eye - vw); if (dot(N,E) < 0.0) N = -N;' +
+    ' vec3 L1 = normalize(vec3(-0.5,-0.7,0.9)); vec3 L2 = normalize(vec3(0.8,0.3,0.4)); vec3 L3 = normalize(vec3(0.0,0.9,0.2));' +
+    ' float d1 = max(dot(N,L1),0.0), d2 = max(dot(N,L2),0.0)*0.45, d3 = max(dot(N,L3),0.0)*0.25;' +
+    ' vec3 H = normalize(L1 + E); float s = pow(max(dot(N,H),0.0), shin) * spec; vec3 H2 = normalize(L2 + E); s += pow(max(dot(N,H2),0.0), shin) * spec * 0.4;' +
+    ' float rim = pow(1.0 - max(dot(N,E),0.0), 3.0) * 0.35; float ao = mix(0.72, 1.0, clamp(vw.z / 30.0, 0.0, 1.0));' +
+    ' vec3 base = col; float gloss = 1.0; if (zones > 0.5) { float r = length(vl.xy);' +
+    '  float ring = (1.0 - smoothstep(26.0, 28.0, r)) * smoothstep(83.0, 84.5, vl.z);' +
+    '  float ch = (1.0 - smoothstep(10.4, 11.4, r)) * smoothstep(85.0, 86.5, vl.z);' +
+    '  float st = smoothstep(96.8, 97.6, vl.z);' +
+    '  base = mix(mix(mix(col, cream, ring), cherry, ch), vec3(0.22,0.13,0.08), st); gloss = 1.0 + ch * 2.5; }' +
+    ' vec3 c = base * (0.30 + d1 * 0.75 + d2 + d3) * ao + vec3(1.0,0.96,0.95) * (s * gloss + rim * 0.6);' +
+    ' gl_FragColor = vec4(c * alpha, alpha); }';
+  function sh(t, src) { var s = gl.createShader(t); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw gl.getShaderInfoLog(s); return s; }
+  var prog = gl.createProgram(); gl.attachShader(prog, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(prog); gl.useProgram(prog);
+  var U = {}; ['P','V','M','col','eye','spec','shin','alpha','shadow','zones','cream','cherry'].forEach(function (k) { U[k] = gl.getUniformLocation(prog, k); });
+  var aP = gl.getAttribLocation(prog, 'p'), aN = gl.getAttribLocation(prog, 'n');
+
+  /* ---------- decode model ---------- */
+  function b64(s) { var bin = atob(s), u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u.buffer; }
+  function makePart(d) {
+    // crease-aware normals: smooth across gentle curves, keep sharp edges (rim, lip) crisp
+    var q = new Uint16Array(b64(d.pos)), idx = new Uint16Array(b64(d.idx)), nv = d.nv, nf = idx.length / 3;
+    var pos = new Float32Array(nv * 3);
+    for (var i = 0; i < nv; i++) for (var k = 0; k < 3; k++) pos[i * 3 + k] = d.min[k] + q[i * 3 + k] * d.scale[k];
+    var fn = new Float32Array(nf * 3), fu = new Float32Array(nf * 3), cnt = new Uint32Array(nv + 1);
+    for (var f = 0; f < nf; f++) {
+      var a = idx[f*3] * 3, b = idx[f*3+1] * 3, c = idx[f*3+2] * 3;
+      var ux = pos[b]-pos[a], uy = pos[b+1]-pos[a+1], uz = pos[b+2]-pos[a+2], vx = pos[c]-pos[a], vy = pos[c+1]-pos[a+1], vz = pos[c+2]-pos[a+2];
+      var nx = uy*vz-uz*vy, ny = uz*vx-ux*vz, nz = ux*vy-uy*vx, l = Math.hypot(nx, ny, nz) || 1;
+      fn[f*3] = nx; fn[f*3+1] = ny; fn[f*3+2] = nz; fu[f*3] = nx/l; fu[f*3+1] = ny/l; fu[f*3+2] = nz/l;
+      cnt[idx[f*3]+1]++; cnt[idx[f*3+1]+1]++; cnt[idx[f*3+2]+1]++;
+    }
+    for (i = 0; i < nv; i++) cnt[i + 1] += cnt[i];
+    var fill = cnt.slice(0, nv), vf = new Uint32Array(nf * 3);
+    for (f = 0; f < nf * 3; f++) vf[fill[idx[f]]++] = (f / 3) | 0;
+    var N = nf * 3, P = new Float32Array(N * 3), Nn = new Float32Array(N * 3), COS = Math.cos(38 * Math.PI / 180);
+    for (f = 0; f < nf; f++) for (var j = 0; j < 3; j++) {
+      var v = idx[f*3+j], o = (f*3+j) * 3, sx = 0, sy = 0, sz = 0;
+      for (var m = cnt[v]; m < cnt[v+1]; m++) {
+        var g = vf[m];
+        if (fu[g*3]*fu[f*3] + fu[g*3+1]*fu[f*3+1] + fu[g*3+2]*fu[f*3+2] >= COS) { sx += fn[g*3]; sy += fn[g*3+1]; sz += fn[g*3+2]; }
+      }
+      P[o] = pos[v*3]; P[o+1] = pos[v*3+1]; P[o+2] = pos[v*3+2]; Nn[o] = sx; Nn[o+1] = sy; Nn[o+2] = sz;
+    }
+    var part = { n: N, arr: true, pb: gl.createBuffer(), nb: gl.createBuffer() };
+    gl.bindBuffer(gl.ARRAY_BUFFER, part.pb); gl.bufferData(gl.ARRAY_BUFFER, P, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, part.nb); gl.bufferData(gl.ARRAY_BUFFER, Nn, gl.STATIC_DRAW);
+    return part;
+  }
+  var body = makePart(CANNELE_MODEL.body), lid = makePart(CANNELE_MODEL.lid);
+  var ground = (function () {
+    var s = 90, pos = new Float32Array([-s,-s,0, s,-s,0, s,s,0, -s,s,0]), nrm = new Float32Array([0,0,1, 0,0,1, 0,0,1, 0,0,1]), idx = new Uint16Array([0,1,2, 0,2,3]);
+    var g = { n: 6, pb: gl.createBuffer(), nb: gl.createBuffer(), ib: gl.createBuffer() };
+    gl.bindBuffer(gl.ARRAY_BUFFER, g.pb); gl.bufferData(gl.ARRAY_BUFFER, pos, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, g.nb); gl.bufferData(gl.ARRAY_BUFFER, nrm, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, g.ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, idx, gl.STATIC_DRAW);
+    return g;
+  })();
+
+  /* ---------- colourways (from the slides: chocolate / vanilla / strawberry / jelly) ---------- */
+  var CW = {
+    jelly: { name: 'Cherry jelly', body: [0.55, 0.06, 0.10], spec: 1.1, shin: 70, alpha: 0.86, lid: [0.62, 0.07, 0.11], cream: [0.97, 0.93, 0.86], cherry: [0.62, 0.02, 0.07], zones: 1 },
+    chocolate: { name: 'Chocolate', body: [0.30, 0.15, 0.10], spec: 0.45, shin: 40, alpha: 1, lid: [0.30, 0.15, 0.10], cream: [0.97, 0.93, 0.86], cherry: [0.85, 0.16, 0.38], zones: 1 },
+    vanilla: { name: 'Vanilla', body: [0.93, 0.85, 0.68], spec: 0.3, shin: 30, alpha: 1, lid: [0.93, 0.85, 0.68], cream: [0.99, 0.97, 0.93], cherry: [0.62, 0.02, 0.07], zones: 1 },
+    strawberry: { name: 'Strawberry', body: [0.89, 0.55, 0.60], spec: 0.4, shin: 36, alpha: 1, lid: [0.89, 0.55, 0.60], cream: [0.99, 0.95, 0.94], cherry: [0.62, 0.02, 0.07], zones: 1 },
+    pla: { name: 'Printed PLA prototype', body: [0.93, 0.90, 0.84], spec: 0.15, shin: 16, alpha: 1, lid: [0.93, 0.90, 0.84], cream: [0.93, 0.90, 0.84], cherry: [0.93, 0.90, 0.84], zones: 0 }
+  };
+  var cw = CW.jelly;
+
+  /* ---------- camera + interaction ---------- */
+  var yaw = -0.6, pitch = 0.32, dist = 260, target = [0, 0, 52], auto = true, lastUser = 0;
+  var lidT = 0, lidGoal = 0, bounce = 0;
+  var drag = null, pinch = null;
+  stage.addEventListener('pointerdown', function (e) { if (e.target.closest('button')) return; drag = { x: e.clientX, y: e.clientY, yaw: yaw, pitch: pitch, id: e.pointerId }; stage.setPointerCapture(e.pointerId); stage.classList.add('grabbing'); auto = false; lastUser = performance.now(); });
+  stage.addEventListener('pointermove', function (e) {
+    if (!drag || e.pointerId !== drag.id) return;
+    yaw = drag.yaw - (e.clientX - drag.x) * 0.008; pitch = Math.max(-0.35, Math.min(1.35, drag.pitch + (e.clientY - drag.y) * 0.006)); lastUser = performance.now();
+  });
+  function endDrag() { drag = null; stage.classList.remove('grabbing'); lastUser = performance.now(); }
+  stage.addEventListener('pointerup', endDrag); stage.addEventListener('pointercancel', endDrag);
+  stage.addEventListener('wheel', function (e) { e.preventDefault(); dist = Math.max(150, Math.min(420, dist * (1 + e.deltaY * 0.001))); lastUser = performance.now(); auto = false; }, { passive: false });
+  // two-finger pinch
+  var touches = {};
+  stage.addEventListener('touchmove', function (e) {
+    if (e.touches.length === 2) {
+      var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      if (pinch) dist = Math.max(150, Math.min(420, pinch.dist * pinch.d / d)); else pinch = { d: d, dist: dist };
+      drag = null;
+    }
+  }, { passive: true });
+  stage.addEventListener('touchend', function () { pinch = null; });
+
+  /* ---------- lid: open / press-fit close ---------- */
+  var actx;
+  function click() {
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      var t = actx.currentTime, buf = actx.createBuffer(1, actx.sampleRate * 0.05, actx.sampleRate), d = buf.getChannelData(0);
+      for (var i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 6);
+      var src = actx.createBufferSource(), f = actx.createBiquadFilter(), g = actx.createGain();
+      f.type = 'bandpass'; f.frequency.value = 2400; g.gain.value = 0.9;
+      src.buffer = buf; src.connect(f).connect(g).connect(actx.destination); src.start(t);
+    } catch (e) {}
+    if (navigator.vibrate) { try { navigator.vibrate(20); } catch (e) {} }
+  }
+  var toastT;
+  function toast(t) { var el = document.getElementById('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(function () { el.classList.remove('on'); }, 1800); }
+  var lidBtn = document.getElementById('lid');
+  lidBtn.addEventListener('click', function () {
+    lidGoal = lidGoal ? 0 : 1;
+    lidBtn.textContent = lidGoal ? 'Press the lid shut' : 'Open the lid';
+    if (lidGoal) { toast('Room for clips, jewellery & spoons'); }
+  });
+  document.getElementById('reset').addEventListener('click', function () { yaw = -0.6; pitch = 0.32; dist = 260; auto = true; });
+  [].forEach.call(document.querySelectorAll('.sw'), function (b) {
+    b.addEventListener('click', function () {
+      [].forEach.call(document.querySelectorAll('.sw'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+      cw = CW[b.dataset.c]; document.getElementById('cname').textContent = cw.name;
+    });
+  });
+
+  /* ---------- render loop ---------- */
+  function resize() {
+    var r = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+    if (cv.width !== Math.round(w * r) || cv.height !== Math.round(h * r)) { cv.width = Math.round(w * r); cv.height = Math.round(h * r); }
+    gl.viewport(0, 0, cv.width, cv.height);
+  }
+  function draw(part, M, color, spec, shin, alpha, shadow) {
+    gl.uniformMatrix4fv(U.M, false, M); gl.uniform3fv(U.col, color); gl.uniform1f(U.spec, spec); gl.uniform1f(U.shin, shin); gl.uniform1f(U.alpha, alpha); gl.uniform1f(U.shadow, shadow ? 1 : 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, part.pb); gl.vertexAttribPointer(aP, 3, gl.FLOAT, false, 0, 0); gl.enableVertexAttribArray(aP);
+    gl.bindBuffer(gl.ARRAY_BUFFER, part.nb); gl.vertexAttribPointer(aN, 3, gl.FLOAT, false, 0, 0); gl.enableVertexAttribArray(aN);
+    if (part.arr) gl.drawArrays(gl.TRIANGLES, 0, part.n); else { gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, part.ib); gl.drawElements(gl.TRIANGLES, part.n, gl.UNSIGNED_SHORT, 0); }
+  }
+  var prev = performance.now(), wasOpen = false;
+  function frame(now) {
+    var dt = Math.min(0.05, (now - prev) / 1000); prev = now;
+    if (!drag && now - lastUser > 2500) auto = true;
+    if (auto) yaw -= dt * 0.35;
+    // lid easing; a little bounce when it presses shut
+    var before = lidT;
+    lidT += (lidGoal - lidT) * Math.min(1, dt * 6);
+    if (lidGoal === 0 && before > 0.02 && lidT <= 0.02) { lidT = 0; bounce = 1; click(); toast('Click: press-fit, no glue'); }
+    if (lidGoal === 1) wasOpen = true;
+    bounce = Math.max(0, bounce - dt * 3.5);
+    resize();
+    gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.enable(gl.DEPTH_TEST);
+    var a = cv.width / cv.height;
+    var eye = [target[0] + dist * Math.cos(pitch) * Math.cos(yaw), target[1] + dist * Math.cos(pitch) * Math.sin(yaw), target[2] + dist * Math.sin(pitch)];
+    gl.uniformMatrix4fv(U.P, false, persp(0.6, a, 10, 2000));
+    gl.uniformMatrix4fv(U.V, false, look(eye, target, [0, 0, 1]));
+    gl.uniform3fv(U.eye, eye);
+    // ground shadow
+    gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false);
+    draw(ground, trans(0, 0, 0.1), [0,0,0], 0, 1, 1, true);
+    gl.depthMask(true); gl.disable(gl.BLEND);
+    // lid: lifts up and tilts back when open
+    var lift = lidT * 34 + Math.sin(bounce * Math.PI * 3) * bounce * 1.6, tilt = -lidT * 0.38;
+    var LM = mul(trans(0, 0, 77 + lift), mul(trans(0, -38, 0), mul(rotX(tilt), mul(trans(0, 38, 0), trans(0, 0, -77)))));
+    gl.uniform1f(U.zones, cw.zones); gl.uniform3fv(U.cream, cw.cream); gl.uniform3fv(U.cherry, cw.cherry);
+    draw(lid, LM, cw.lid, 0.35, 24, 1, false);
+    gl.uniform1f(U.zones, 0);
+    // body (jelly is drawn see-through)
+    if (cw.alpha < 1) { gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false); }
+    draw(body, trans(0, 0, 0), cw.body, cw.spec, cw.shin, cw.alpha, false);
+    gl.depthMask(true); gl.disable(gl.BLEND);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  function report() { try { parent.postMessage({ canneleHeight: document.documentElement.scrollHeight }, '*'); } catch (e) {} }
+  report(); window.addEventListener('resize', report);
+})();
+</script>
+</body>
+</html>

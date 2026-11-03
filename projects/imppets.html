@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ImpPets — Daisy Fang</title>
+  <meta name="description" content="ImpPets: a campus companion app and device that helps freshers find activities and someone to go with. Case study by Daisy Fang.">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="topbar mono">
+    <a class="ul" href="../index.html#work">← Index</a>
+    <span class="muted">01 / 04 — ImpPets</span>
+    <nav aria-label="Main">
+      <a class="ul" href="../index.html#about">About</a>
+      <a class="ul accent" href="../index.html#contact">Contact ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ========== 标题 ========== -->
+    <section class="case-hero split">
+      <div class="hero-text">
+        <p class="mono accent" style="margin:0">Case study 01 · Research → Product</p>
+        <h1>
+          <img class="h1-logo" src="../assets/img/imppets-logo.webp" alt="ImpPets" width="1296" height="433">
+          <span class="reveal">
+            <span class="ln"><span style="--i:0"><em>Go together,</em></span></span>
+            <span class="ln"><span style="--i:1"><em>grow together.</em></span></span>
+          </span>
+        </h1>
+        <p class="lede">A campus companion app and device that helps freshers discover activities, find someone to go with, and grow confidence along the way.</p>
+      </div>
+      <figure class="hero-photo">
+        <img src="../assets/img/imppets-hand-cut.webp" alt="A hand taps the ImpPet device against a phone showing an NFC profile" width="669" height="502">
+      </figure>
+    </section>
+
+    <!-- ========== 项目信息栏 ========== -->
+    <dl class="meta">
+      <div><dt>My role</dt><dd><strong>Concept &amp; design lead</strong>, involved across the full design cycle</dd></div>
+      <div><dt>Team</dt><dd>Team WYD? · Daisy Fang, Aiden Li, Sunday Tsang, Sihan Zhu</dd></div>
+      <div><dt>Context</dt><dd>DE1 Human-Centred Design Engineering, Dyson School of Design Engineering, 2026</dd></div>
+      <div><dt>Methods &amp; tools</dt><dd>Survey, interviews, co-design, Wizard of Oz · Figma, Lovable, Procreate, CAD, 3D printing, ESP32</dd></div>
+    </dl>
+
+
+    <!-- ========== 01 挑战 ========== -->
+    <section class="stage-sec">
+      <div class="stage-label"><span class="step">01</span><h2>The challenge</h2></div>
+      <div class="stage-body">
+        <p class="big" data-fade>How might we support freshers through the social transition into university life in a simple, engaging and low-pressure way?</p>
+        <p data-fade>At Imperial, first-year students, especially international freshers, arrive in a fast-moving environment. There are plenty of activities, but joining them and turning brief encounters into belonging can still feel hard.</p>
+        <div class="stats3" data-fade>
+          <div><b>67%</b><span>of international respondents reported social or cultural entry barriers</span></div>
+          <div><b class="accent">56–62%</b><span>of students facing these barriers also reported regular loneliness</span></div>
+          <div><b>57 + 9</b><span>survey responses and interviews in our spring research</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 02 调研 ========== -->
+    <section class="stage-sec">
+      <div class="stage-label"><span class="step">02</span><h2>Research</h2><span class="mono muted">Moments of Loneliness in Imperial</span></div>
+      <div class="stage-body">
+        <p data-fade>Our research phase framed loneliness on campus as an everyday design challenge. We looked at how first-year international students move between study spaces, halls and societies, and at the transitional moments in between, using a survey, in-depth interviews, diaries, on-campus observation, personas and journey maps.</p>
+        <div class="duo" data-fade>
+          <figure class="fig">
+            <div class="frame cover" style="aspect-ratio:4/5"><img src="../assets/img/research-library.webp" alt="Students studying alone in an Imperial study space" loading="lazy"></div>
+            <figcaption class="mono"><span>Observation</span><span class="muted">Study spaces</span></figcaption>
+          </figure>
+          <figure class="fig">
+            <div class="frame cover" style="aspect-ratio:4/5"><img src="../assets/img/research-lawn.webp" alt="Students gathered on the lawn at Imperial" loading="lazy"></div>
+            <figcaption class="mono"><span>Observation</span><span class="muted">Communal spaces</span></figcaption>
+          </figure>
+        </div>
+        <dl class="mine" data-fade>
+          <dt>My role</dt>
+          <dd>I co-designed and ran our survey with one teammate, which gathered 57 responses from students across Imperial. Alongside the rest of the team I carried out interviews, nine in total, and we then synthesised the survey, interview and diary findings together to see where loneliness actually shows up in student life.</dd>
+        </dl>
+      </div>
+    </section>
+
+    <!-- ========== 03 洞察 ========== -->
+    <section class="stage-sec">
+      <div class="stage-label"><span class="step">03</span><h2>Insight</h2></div>
+      <div class="stage-body">
+        <blockquote class="quote" data-fade>“Sometimes I want to join an activity, but I don’t know who to go with.”<cite>Research participant</cite></blockquote>
+        <ul class="insights" data-fade>
+          <li><b>Campus opportunities feel hard to enter.</b><span>Imperial has many activities, but freshers often lack clear entry points, familiar companions or the confidence to join groups that already exist.</span></li>
+          <li><b>Starting a connection feels high-stakes.</b><span>Messaging or approaching someone can feel intrusive or risky. Shared activities give people a natural reason to interact.</span></li>
+          <li><b>Taking part doesn’t guarantee belonging.</b><span>Students meet people in Freshers’ Week and still feel disconnected. What matters is whether brief encounters continue.</span></li>
+        </ul>
+        <p data-fade>These insights led us to reframe the brief: from <em>reducing loneliness</em> to <em>supporting freshers’ social transition</em> into university life.</p>
+        <dl class="mine" data-fade>
+          <dt>My role</dt>
+          <dd>The insights came out of team discussion as we compared what we had heard and seen. Working through them together is also how we arrived at the reframe: from reducing loneliness to supporting the social transition into university.</dd>
+        </dl>
+      </div>
+    </section>
+
+    <!-- ========== 调研报告 PDF ========== -->
+    <a class="doc-link" href="../assets/docs/Moments_of_Loneliness_in_Imperial.pdf" target="_blank" rel="noopener" data-fade>
+      <span class="mono accent">Explore more details</span>
+      <span class="doc-title">Moments of Loneliness in Imperial</span>
+      <span class="mono muted">Full research report · 17 pages · PDF</span>
+      <i aria-hidden="true">↗</i>
+    </a>
+
+    <!-- ========== 04 概念 ========== -->
+    <section class="stage-sec">
+      <div class="stage-label"><span class="step">04</span><h2>Concept</h2></div>
+      <div class="stage-body">
+        <div class="funnel" data-fade>
+          <div><b>40</b><span>Initial ideas</span></div>
+          <div><b>8</b><span>Concepts</span></div>
+          <div><b>3</b><span>Directions explored</span></div>
+          <div class="final"><b>1</b><span>ImpPets</span></div>
+        </div>
+        <p data-fade>Our first direction matched students by location through NFC checkpoints around campus. Testing raised privacy concerns and showed it depended too much on where people happened to be. We pivoted to a personal companion: an app for discovering activities and finding someone to go with, paired with a small device that carries a digital pet. The pet hatches and grows as the student explores campus and makes friends.</p>
+        <dl class="mine" data-fade>
+          <dt>My role</dt>
+          <dd>I proposed the ImpPets idea and led the concept: pairing an activity app with a Tamagotchi-inspired device, so that every event a student joins and every friend they make visibly helps their pet grow. It turned a vague goal of “feeling less lonely” into small, rewarding steps.</dd>
+        </dl>
+      </div>
+    </section>
+
+    <!-- ========== 05 原型 ========== -->
+    <section class="stage-sec">
+      <div class="stage-label"><span class="step">05</span><h2>Prototype</h2></div>
+      <div class="stage-body">
+        <p data-fade>We prototyped hardware and software in parallel and tested with users at every stage.</p>
+        <ol class="timeline">
+          <li data-fade style="--i:0">
+            <div class="frame contain"><img src="../assets/img/imppets-lofi-egg.webp" alt="Cardboard lo-fi prototype of the egg-shaped device" loading="lazy"></div>
+            <h3>Lo-fi: form</h3>
+            <p>Three cardboard forms tested in co-design sessions with 7 peers and a survey of 30. 91.3% preferred the egg shape, 65.2% palm size and 60.9% a pin attachment.</p>
+          </li>
+          <li data-fade style="--i:1">
+            <div class="frame"><img src="../assets/img/imppets-breadboard.webp" alt="ESP32 breadboard prototype with OLED display and NFC reader" loading="lazy"></div>
+            <h3>Hi-fi: works-like</h3>
+            <p>An ESP32 with a 0.96" OLED and a PN532 NFC reader. The pet on screen evolves with the number of contacts tapped, in sync with the app’s social points.</p>
+          </li>
+          <li data-fade style="--i:2">
+            <div class="frame contain"><img src="../assets/img/imppets-cad.webp" alt="CAD models of the device shell" loading="lazy"></div>
+            <h3>Hi-fi: looks-like</h3>
+            <p>Shell modelled in CAD, 3D printed in PLA and painted. The app was built in Lovable and tested with think-aloud sessions and cognitive walkthroughs.</p>
+          </li>
+        </ol>
+        <dl class="mine" data-fade>
+          <dt>My role</dt>
+          <dd>The prototypes were a shared effort. I built them together with my teammates, from cardboard form studies and the ESP32 works-like build to the 3D-printed shell and the app, testing each round with users before moving on.</dd>
+        </dl>
+      </div>
+    </section>
+
+    <!-- ========== 06 设计 ========== -->
+    <section class="stage-sec">
+      <div class="stage-label"><span class="step">06</span><h2>Design</h2></div>
+      <div class="stage-body">
+        <p data-fade>Every student starts with a mystery egg. Attending activities and tapping devices with new friends earns social points, and the pet hatches and grows through Freshers’ season. The translucent shell and soft lilac palette carry through from the device to the app and the brand.</p>
+        <ol class="growth" data-fade aria-label="Pet growth">
+          <li><img src="../assets/img/imppets-r-egg.webp" alt="ImpPet device showing a pixel egg" width="900" height="900" loading="lazy"><span class="mono"><b>01</b> Mystery egg</span></li>
+          <li><img src="../assets/img/imppets-r-hatch.webp" alt="ImpPet device showing a chick hatching from the egg" width="900" height="900" loading="lazy"><span class="mono"><b>02</b> Hatching with social points</span></li>
+          <li><img src="../assets/img/imppets-r-chick.webp" alt="ImpPet device showing a grown chick" width="900" height="900" loading="lazy"><span class="mono"><b>03</b> Grown up by end of Freshers’</span></li>
+        </ol>
+        <figure class="fig" data-fade>
+          <div class="collection">
+            <img src="../assets/img/imppets-r-dog.webp" alt="ImpPet device showing a puppy" width="700" height="700" loading="lazy">
+            <img src="../assets/img/imppets-r-cat.webp" alt="ImpPet device showing a kitten" width="700" height="700" loading="lazy">
+            <img src="../assets/img/imppets-r-rabbit.webp" alt="ImpPet device showing a rabbit" width="700" height="700" loading="lazy">
+            <img src="../assets/img/imppets-r-snake.webp" alt="ImpPet device showing a snake" width="700" height="700" loading="lazy">
+          </div>
+          <figcaption class="mono"><span>Collect them all</span><span class="muted">Every egg hatches a different pet</span></figcaption>
+        </figure>
+        <figure class="fig brand" data-fade>
+          <div class="brand-logo"><img src="../assets/img/imppets-logo.webp" alt="ImpPet logo: navy ‘Imp’ with a chick hatching from the ‘p’, lilac ‘Pet’ and a yellow paw print" width="1296" height="433" loading="lazy"></div>
+          <ul class="swatches" aria-label="Brand colours">
+            <li><span class="chip" style="background:#1A2855"></span><span class="mono">Navy<br>#1A2855</span></li>
+            <li><span class="chip" style="background:#A2A0DB"></span><span class="mono">Lilac<br>#A2A0DB</span></li>
+            <li><span class="chip" style="background:#F5BC44"></span><span class="mono">Yolk<br>#F5BC44</span></li>
+          </ul>
+          <figcaption class="mono"><span>Brand identity</span><span class="muted">Logo &amp; palette</span></figcaption>
+        </figure>
+        <figure class="fig" data-fade>
+          <div class="frame cover" style="aspect-ratio:auto"><img src="../assets/img/imppets-moodboard.webp" alt="Moodboard: lilac and pastel colours, translucent glitter plastics and Tamagotchi-style references" loading="lazy" width="1099" height="734"></div>
+          <figcaption class="mono"><span>Visual direction</span><span class="muted">Moodboard</span></figcaption>
+        </figure>
+        <dl class="mine" data-fade>
+          <dt>My role</dt>
+          <dd>I led the visual and interaction design across the project: the device’s egg-shaped form and translucent shell, the app’s UI and user flows, the ImpPets brand identity including the logo and colour palette, the product renders, and the layout of our report and exhibition boards. Keeping one visual language across hardware, software and brand made ImpPets feel like a single product.</dd>
+        </dl>
+      </div>
+    </section>
+
+    <!-- ========== 可交互 App 演示 ========== -->
+    <section class="try-app" aria-labelledby="try-title">
+      <div class="anatomy-head">
+        <span class="mono accent">Interactive prototype</span>
+        <h3 id="try-title">Try the ImpPets app</h3>
+        <a class="ul mono" href="imppets-demo.html" target="_blank" rel="noopener">Open full screen ↗</a>
+      </div>
+      <iframe id="demo-frame" src="imppets-demo.html" title="Interactive ImpPets app prototype" loading="lazy"></iframe>
+    </section>
+
+    <!-- ========== 设备交互：拖到手机交友 + 双击看爆炸图 ========== -->
+    <section class="try-app" aria-labelledby="device-title">
+      <div class="anatomy-head">
+        <span class="mono accent">Interactive device</span>
+        <h3 id="device-title">Tap to connect, double-click to look inside</h3>
+        <a class="ul mono" href="imppets-device.html" target="_blank" rel="noopener">Open full screen ↗</a>
+      </div>
+      <iframe id="device-frame" src="imppets-device.html" title="Interactive ImpPet device: drag it onto the phone to add a friend, or double-click to see the exploded view" loading="lazy" style="height:720px"></iframe>
+    </section>
+
+    <!-- ========== 07 结果 ========== -->
+    <section class="stage-sec">
+      <div class="stage-label"><span class="step">07</span><h2>Outcome</h2></div>
+      <div class="stage-body">
+        <figure class="fig" data-fade>
+          <div class="frame cover" style="aspect-ratio:4/3"><img src="../assets/img/imppets-in-use.webp" alt="A student taps the ImpPet device against a phone to open an NFC profile" width="1448" height="1086" loading="lazy"></div>
+          <figcaption class="mono"><span>In use</span><span class="muted">Tap to exchange profiles</span></figcaption>
+        </figure>
+        <div class="stats3" data-fade>
+          <div><b>30+</b><span>first-year users tested the device and app</span></div>
+          <div><b class="accent">90%</b><span>of 20 freshers said ImpPets helped them build social connections</span></div>
+          <div><b>~£24</b><span>hardware cost per unit, from our bill of materials</span></div>
+        </div>
+        <p data-fade>Users were drawn to the hatching mechanic: they could see the egg changing without knowing what would appear. The social points system gave them small, low-effort reasons to keep exploring.</p>
+        <p class="limit" data-fade>Limitation: testing ran over a short period, so long-term engagement is still unproven. A longer study across a full Freshers’ season would be the next step.</p>
+      </div>
+    </section>
+
+    <!-- ========== 交付报告 PDF ========== -->
+    <a class="doc-link" href="../assets/docs/ImpPets_Delivery_Report.pdf" target="_blank" rel="noopener" data-fade>
+      <span class="mono accent">Explore more details</span>
+      <span class="doc-title">ImpPets Delivery Report</span>
+      <span class="mono muted">Prototyping, storyboards, evaluation · 14 pages · PDF</span>
+      <i aria-hidden="true">↗</i>
+    </a>
+  </main>
+
+  <nav class="next" aria-label="More work">
+    <a class="btn" href="../index.html#work">← All projects</a>
+    <a class="big-link" href="airevo.html">Next: airevo <i>→</i></a>
+  </nav>
+
+</div>
+<script src="../js/main.js"></script>
+<script>
+  // 让 App 演示的高度自动适应内容
+  window.addEventListener('message', function (e) {
+    if (e.data && e.data.imppetsDemoHeight) document.getElementById('demo-frame').style.height = e.data.imppetsDemoHeight + 'px';
+    if (e.data && e.data.imppetsDeviceHeight) document.getElementById('device-frame').style.height = e.data.imppetsDeviceHeight + 'px';
+  });
+</script>
+</body>
+</html>

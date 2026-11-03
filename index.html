@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Daisy Fang — Design Engineer</title>
+  <meta name="description" content="Daisy Fang is a human-centred design engineer studying MEng Design Engineering at Imperial College London.">
+  <meta property="og:title" content="Daisy Fang — Design Engineer">
+  <meta property="og:description" content="Human-centred design engineer. From insight to working product.">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ========== 顶部导航 ========== -->
+  <header class="topbar mono">
+    <a href="#top">Daisy Fang</a>
+    <span class="muted">Design Engineer — London</span>
+    <nav aria-label="Main">
+      <a class="ul" href="#work">Work</a>
+      <a class="ul" href="#coursework">Coursework</a>
+      <a class="ul" href="#about">About</a>
+      <a class="ul" href="assets/Daisy_Fang_CV.pdf">CV</a>
+      <a class="ul accent" href="#contact">Contact ↗</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <!-- ========== 首屏：M1 标题逐行上滑 ========== -->
+    <section class="hero">
+      <h1 class="reveal">
+        <span class="ln"><span style="--i:0">Human-centred design</span></span>
+        <span class="ln"><span style="--i:1">engineer. <em>From insight</em></span></span>
+        <span class="ln"><span style="--i:2"><em>to working product.</em></span></span>
+      </h1>
+      <dl class="facts">
+        <dt>Now</dt><dd>MEng Design Engineering, Imperial College London</dd>
+        <dt>Research</dt><dd>HKU · CompassHealth.ai</dd>
+        <dt>Before</dt><dd>Beeplux Semiconductor (C#), HUST × United Imaging</dd>
+        <dt>Tools</dt><dd>Fusion 360, 3D printing, Figma, Python, C#</dd>
+      </dl>
+    </section>
+
+    <!-- ========== 项目目录：M3 分割线生长 + M4 悬停图片 ========== -->
+    <section id="work" aria-labelledby="work-title">
+      <div class="section-head">
+        <h2 id="work-title" class="mono" style="margin:0">Selected work</h2>
+        <span class="mono muted">2023 — 2026</span>
+      </div>
+      <div class="index">
+        <div class="index-head mono" aria-hidden="true"><span>No.</span><span>Project</span><span>Discipline</span><span style="text-align:right">Year</span></div>
+
+        <a class="row" style="--i:0" href="projects/imppets.html" data-img="assets/img/imppets-in-use.webp" data-alt="ImpPets app and companion device">
+          <span class="n">01</span><span class="t">ImpPets — go together, grow together</span><span class="d">Research · Product · UX</span><span class="y">2026</span>
+        </a>
+        <a class="row" style="--i:1" href="projects/airevo.html" data-img="assets/img/airevo-hero.webp" data-alt="airevo platform shoe">
+          <span class="n">02</span><span class="t">airevo — comfortable platform shoes</span><span class="d">Footwear · Product &amp; brand</span><span class="y">2025</span>
+        </a>
+        <a class="row" style="--i:2" href="projects/cannele.html" data-img="assets/img/cannele.webp" data-alt="Cannelé storage box">
+          <span class="n">03</span><span class="t">Cannelé StorageBox</span><span class="d">CAD · 3D printing</span><span class="y">2026</span>
+        </a>
+        <a class="row last" style="--i:3" href="projects/delivery-vehicle.html" data-img="assets/img/rcv-hando-cut.webp" data-alt="Hando delivery vehicle">
+          <span class="n">04</span><span class="t">Hando — contact-free ward delivery</span><span class="d">Electronics · IoT · CAD</span><span class="y">2023</span>
+        </a>
+
+        <div class="peek" aria-hidden="true"><img alt=""></div>
+      </div>
+    </section>
+
+    <!-- ========== 图片组：M2 滚动淡入 ========== -->
+    <section class="gallery" aria-label="Project images">
+      <figure class="fig" data-fade style="--i:0">
+        <div class="frame"><img src="assets/img/imppets-app-hd.webp" alt="ImpPets app screens" loading="lazy"></div>
+        <figcaption class="mono"><span>01 ImpPets</span><span class="muted">App UI</span></figcaption>
+      </figure>
+      <figure class="fig" data-fade style="--i:1">
+        <div class="frame"><img src="assets/img/shoe-exploded.webp" alt="airevo exploded view" loading="lazy"></div>
+        <figcaption class="mono"><span>02 airevo</span><span class="muted">Exploded view</span></figcaption>
+      </figure>
+      <figure class="fig" data-fade style="--i:2">
+        <div class="frame"><img src="assets/img/cannele-stand.webp" alt="Cannelé storage box on a cake stand" loading="lazy"></div>
+        <figcaption class="mono"><span>03 Cannelé</span><span class="muted">PLA, press-fit lid</span></figcaption>
+      </figure>
+      <figure class="fig" data-fade style="--i:3">
+        <div class="frame"><img src="assets/img/rcv-hando-cut.webp" alt="Hando delivery vehicle" loading="lazy"></div>
+        <figcaption class="mono"><span>04 Hando</span><span class="muted">Remote-control delivery</span></figcaption>
+      </figure>
+    </section>
+
+    <!-- ========== 课程作业：文件夹卡片 ========== -->
+    <section class="coursework" id="coursework" aria-labelledby="cw-title">
+      <div class="section-head">
+        <h2 id="cw-title" class="mono" style="margin:0">Coursework</h2>
+        <span class="mono muted">Selected reports</span>
+      </div>
+      <div class="folders">
+
+        <article class="folder" data-fade style="--i:0">
+          <span class="tab mono">Data Science</span>
+          <div class="folder-img"><img src="assets/img/wine-matrix.svg" alt="Confusion matrix of the final SVM on the test set: 214 of 224 above-median buyers found" loading="lazy"></div>
+          <div class="folder-body">
+            <h3>Predicting above-median wine purchasers</h3>
+            <p class="mono muted">DESE40009 Data Science · Individual analysis · 2026</p>
+            <p>In our group, each member tested a different classification method. I built and tuned a support vector machine that flags customers likely to spend above the median on wine, using demographics and purchase channels only, so the model never sees the spending it predicts.</p>
+            <dl class="kv">
+              <div><dt>Accuracy</dt><dd>93.8%</dd></div>
+              <div><dt>Recall</dt><dd class="accent">95.5%</dd></div>
+              <div><dt>ROC-AUC</dt><dd>0.980</dd></div>
+            </dl>
+            <a class="folder-link" href="assets/docs/Wine_Purchaser_SVM_Report.pdf" target="_blank" rel="noopener">Read the report <i aria-hidden="true">↗</i></a>
+          </div>
+        </article>
+
+        <article class="folder" data-fade style="--i:1">
+          <span class="tab mono">Materials &amp; Manufacturing</span>
+          <div class="folder-img white"><img src="assets/img/torch.webp" alt="Solar and hand-crank LED torch" loading="lazy"></div>
+          <div class="folder-body">
+            <h3>REVENG: solar hand-crank torch</h3>
+            <p class="mono muted">DE1 Materials &amp; Manufacturing · March 2026</p>
+            <p>We took apart an emergency torch, built its bill of materials and analysed how each part is made. I ran a CES EduPack Eco Audit, and we redesigned it with a detachable casing and an upgraded LED and battery to make it easier to repair.</p>
+            <dl class="kv">
+              <div><dt>CO₂ footprint</dt><dd class="accent">−38%</dd></div>
+              <div><dt>Embodied energy</dt><dd>−33%</dd></div>
+              <div><dt>kg CO₂</dt><dd class="sm">3.93 → 2.42</dd></div>
+            </dl>
+            <a class="folder-link" href="assets/docs/REVENG_Report.pdf" target="_blank" rel="noopener">Read the report <i aria-hidden="true">↗</i></a>
+          </div>
+        </article>
+
+        <article class="folder folder-more" data-fade style="--i:2">
+          <span class="tab mono">More</span>
+          <div class="folder-body">
+            <p class="more-title">More coursework coming soon.</p>
+            <p class="mono muted">New reports are added as each module wraps up.</p>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ========== 数据 ========== -->
+    <section class="numbers" aria-label="Results in numbers">
+      <div class="num" data-fade style="--i:0">
+        <b>57 + 9</b>
+        <span>Survey responses and interviews behind ImpPets</span>
+      </div>
+      <div class="num" data-fade style="--i:1">
+        <b class="accent">−38%</b>
+        <span>CO₂ footprint in the torch redesign (3.93 → 2.42 kg)</span>
+      </div>
+      <div class="num" data-fade style="--i:2">
+        <b>95.5%</b>
+        <span>Recall of the wine purchaser model: 214 of 224 found</span>
+      </div>
+    </section>
+
+    <!-- ========== 关于我 ========== -->
+    <section class="about" id="about" aria-labelledby="about-title">
+      <div class="about-text" data-fade>
+        <p class="mono accent" style="margin:0">About</p>
+        <h2 id="about-title">I like problems that sit between <em>how people feel</em> and <em>how things work</em>.</h2>
+        <p>I’m Daisy, an MEng Design Engineering student at Imperial College London. My projects start with people, through surveys, interviews and my own experience, and end with something that works: a printed part, a tested prototype, a model that holds up on unseen data.</p>
+        <p>Outside my course I research digital health at HKU, have interned as a C# software engineer, and run competitions and hackathons for the Dyson School of Design Engineering.</p>
+      </div>
+      <ul class="cv" data-fade style="--i:1">
+        <li><span class="role">Research Assistant<small>HKU · CompassHealth.ai</small></span><span class="when">2026 –</span></li>
+        <li><span class="role">Software Intern (C#)<small>Beeplux Semiconductor</small></span><span class="when">2026</span></li>
+        <li><span class="role">Research Assistant<small>HUST × United Imaging</small></span><span class="when">2025</span></li>
+        <li><span class="role">Competitions &amp; Hackathon Manager<small>Dyson School of Design Engineering</small></span><span class="when">Now</span></li>
+        <li><span class="role">Student Builder Group Leader<small>AWS</small></span><span class="when">Now</span></li>
+        <li><span class="role">MEng Design Engineering<small>Imperial College London</small></span><span class="when">2025 – 2029</span></li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- ========== 联系方式 ========== -->
+  <footer class="footer" id="contact">
+    <h2>Say <em>hello</em>.</h2>
+    <div class="contact">
+      <div class="copy-row">
+        <a class="ul accent" href="mailto:daisyyfang12@gmail.com">daisyyfang12@gmail.com</a>
+        <button class="copy-btn" type="button" data-copy="daisyyfang12@gmail.com">Copy</button>
+      </div>
+      <a class="ul" href="https://www.linkedin.com/in/daisy-fang-7a3907391" target="_blank" rel="noopener">LinkedIn ↗</a>
+      <a class="btn" href="assets/Daisy_Fang_CV.pdf">Download CV <i>→</i></a>
+      <span class="muted" style="font-size:12px">© 2026 Daisy Fang</span>
+    </div>
+  </footer>
+
+</div>
+<script src="js/main.js"></script>
+</body>
+</html>

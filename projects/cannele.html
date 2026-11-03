@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Cannelé StorageBox — Daisy Fang</title>
+  <meta name="description" content="Cannelé StorageBox: a 3D-printed desk organiser shaped like a French cannelé, with a glue-free press-fit lid. Case study by Daisy Fang.">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Pinyon+Script&display=swap">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body.cannele { --accent: #9E1B2B; --pink: #F6DADA; --pink-2: #EFC9C9; --display: 'Playfair Display', Georgia, serif; --script: 'Pinyon Script', 'Snell Roundhand', cursive; }
+    .script { font-family: var(--script); color: var(--accent); font-weight: 400; }
+    .band { background: var(--pink); }
+    .band .wrap { padding-block: clamp(56px, 8vw, 104px); }
+
+    .hero-c .h1-logo { width: min(100%, 440px); margin-left: 0; }
+    .hero-c .tagline { font-size: clamp(34px, 4.2vw, 56px); line-height: 1.05; margin: 0; }
+    .hero-c .hero-photo { position: relative; }
+    .hero-c .hero-photo::before { content: ""; position: absolute; inset: 4% 14%; border-radius: 50%; background: radial-gradient(closest-side, var(--pink-2), rgba(239,201,201,0)); z-index: -1; }
+    .hero-c .hero-photo img { -webkit-mask-image: none; mask-image: none; max-width: 400px; filter: drop-shadow(0 34px 30px rgba(120,20,30,.25)); animation: bob 5s ease-in-out infinite; }
+    @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+    @media (prefers-reduced-motion: reduce) { .hero-c .hero-photo img { animation: none; } }
+
+    .features { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+    @media (max-width: 520px) { .features { grid-template-columns: minmax(0, 1fr); } }
+    .features li { border-top: 1px solid var(--ink); padding-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+    .features b { font-family: var(--display); font-weight: 500; font-size: 21px; color: var(--accent); }
+    .features span { font-size: 16px; color: var(--muted); }
+
+    .anno { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+    .anno li { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 14px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+    .anno li:first-child { border-top: 1px solid var(--ink); }
+    .anno .k { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: #fff; font-family: var(--mono); font-size: 13px; display: grid; place-items: center; }
+    .anno h3 { margin: 0 0 4px; font-weight: 400; font-size: 22px; }
+    .anno p { margin: 0; font-size: 16.5px; color: var(--muted); }
+    .anno p + p { margin-top: 6px; }
+    .callout { background: var(--pink); padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; }
+    .callout b { font-family: var(--mono); font-weight: 500; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+    .callout p { margin: 0; font-size: 16px; }
+    .sections3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .sections3 figure { margin: 0; background: #241A1A; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; padding: 16px; max-width: 100%; }
+    .sections3 img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    @media (max-width: 560px) { .sections3 { grid-template-columns: minmax(0, 1fr); } }
+
+    .drawing { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+    .drawing img { width: 100%; height: auto; background: #fff; }
+    .dims { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); border-top: 1px solid var(--ink); }
+    .dims div { display: flex; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+    .dims dt { font-family: var(--mono); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+    .dims dd { margin: 0; font-size: 24px; font-weight: 300; font-variant-numeric: tabular-nums; }
+    @media (max-width: 760px) { .drawing { grid-template-columns: minmax(0, 1fr); } }
+
+    .gallery2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+    .gallery2 figure { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+    .gallery2 .frame { background: var(--panel); aspect-ratio: 4 / 3; display: flex; align-items: center; justify-content: center; padding: 18px; overflow: hidden; max-width: 100%; }
+    .gallery2 .frame.cover { padding: 0; }
+    .gallery2 .frame img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .gallery2 .frame.cover img { width: 100%; height: 100%; object-fit: cover; }
+    .gallery2 figcaption { display: flex; justify-content: space-between; gap: 10px; }
+    @media (max-width: 560px) { .gallery2 { grid-template-columns: minmax(0, 1fr); } }
+
+    .gift { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(32px, 6vw, 80px); align-items: center; }
+    @media (max-width: 760px) { .gift { grid-template-columns: minmax(0, 1fr); } }
+    .gift h2 { margin: 0; font-family: var(--display); font-weight: 700; font-size: clamp(34px, 4vw, 52px); line-height: 1.05; color: var(--accent); }
+    .gift .script { font-size: clamp(28px, 3.4vw, 42px); margin: 6px 0 0; line-height: 1.1; }
+    .opts { list-style: none; margin: 24px 0 0; padding: 0; display: flex; flex-direction: column; border-top: 1px solid var(--accent); }
+    .opts li { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--pink-2); font-size: 17px; }
+    .opts li span { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); padding-top: 4px; }
+
+    .engrave { background: #fff; padding: clamp(20px, 3vw, 32px); display: flex; flex-direction: column; gap: 16px; align-items: center; box-shadow: 0 20px 50px -30px rgba(120,20,30,.4); }
+    .engrave .k { align-self: flex-start; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+    .engrave svg { width: min(100%, 300px); height: auto; }
+    .fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; width: 100%; }
+    .fields label { min-width: 0; }
+    .fields input { width: 100%; min-width: 0; }
+    .fields label { display: flex; flex-direction: column; gap: 4px; font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+    .fields input { font: inherit; font-family: var(--serif); font-size: 17px; text-transform: none; letter-spacing: 0; padding: 9px 11px; border: 1px solid var(--pink-2); background: var(--bg); color: var(--ink); min-height: 44px; }
+    .fields input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  </style>
+</head>
+<body class="cannele">
+<div class="wrap">
+  <header class="topbar mono">
+    <a class="ul" href="../index.html#work">← Index</a>
+    <span class="muted">03 / 04 — Cannelé StorageBox</span>
+    <nav aria-label="Main">
+      <a class="ul" href="../index.html#about">About</a>
+      <a class="ul accent" href="../index.html#contact">Contact ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ========== 标题：Logo + 产品图 ========== -->
+    <section class="case-hero split hero-c">
+      <div class="hero-text">
+        <p class="mono accent" style="margin:0">Case study 03 · CAD · 3D printing</p>
+        <h1><img class="h1-logo" src="../assets/img/cannele-logo.webp" alt="Cannelé StorageBox — Valentine’s Edition" width="1400" height="760"></h1>
+        <p class="tagline script reveal"><span class="ln"><span style="--i:0">A sweet little keepsake that tidies your desk.</span></span></p>
+        <p class="lede">A desk organiser shaped like a French cannelé, with a glue-free press-fit lid. Modelled in CAD, drawn to spec and 3D printed in PLA.</p>
+      </div>
+      <figure class="hero-photo">
+        <img src="../assets/img/cannele-hero.webp" alt="Cherry-red Cannelé StorageBox with a whipped-cream lid and a cherry on top" width="438" height="555">
+      </figure>
+    </section>
+
+    <dl class="meta">
+      <div><dt>My role</dt><dd><strong>Individual project</strong>: concept, CAD modelling, technical drawing, 3D printing and presentation</dd></div>
+      <div><dt>Context</dt><dd>Imperial College London · Design Engineering, 2026</dd></div>
+      <div><dt>Product</dt><dd>Two-part storage box for jewellery, clips, stationery and dessert cutlery</dd></div>
+      <div><dt>Tools</dt><dd>Fusion 360 · Bambu Lab FDM printing · PLA · technical drawing</dd></div>
+    </dl>
+
+    <!-- ========== 01 设计理念 ========== -->
+    <section class="stage-sec">
+      <div class="stage-label"><span class="step">01</span><h2>Design thoughts</h2></div>
+      <div class="stage-body">
+        <p class="big" data-fade>Inspired by the iconic French canelé, this compact desk organiser turns small daily clutter into a delightful ritual. As a Valentine’s gift, it combines “love at first sight” looks with storage you actually use, so it’s not just cute, it’s used every day.</p>
+        <ul class="features" data-fade>
+          <li><b>Giftable aesthetics</b><span>A dessert silhouette with a “topping” decoration: cute, refined and display-worthy.</span></li>
+          <li><b>Practical storage</b><span>Several scales: small for jewellery and clips, larger for stationery and dessert cutlery.</span></li>
+          <li><b>Press-fit closure</b><span>Glue-free and tool-free: easy to open, secure when closed, satisfying to use.</span></li>
+          <li><b>Two-part design</b><span>Separate container and cream-top lid for easier printing, assembly and customisation.</span></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========== 3D 模型 ========== -->
+  <section class="try-app" aria-labelledby="model-title">
+    <div class="anatomy-head">
+      <span class="mono accent">3D model</span>
+      <h3 id="model-title">Turn it, open it, pick a flavour</h3>
+      <a class="ul mono" href="cannele-viewer.html" target="_blank" rel="noopener">Open full screen ↗</a>
+    </div>
+    <iframe id="model-frame" src="cannele-viewer.html" title="Interactive 3D model of the Cannelé StorageBox: drag to rotate, open the lid and change the colourway" loading="lazy" style="height:700px"></iframe>
+  </section>
+
+  <!-- ========== 02 结构设计 ========== -->
+  <section class="stage-sec">
+    <div class="stage-label"><span class="step">02</span><h2>Designed to print</h2></div>
+    <div class="stage-body">
+      <p data-fade>Every detail keeps the dessert-like, gift-ready look while making the snap reliable, the print efficient and the part easy to manufacture.</p>
+      <ol class="anno" data-fade>
+        <li><span class="k">1</span><div><h3>Lid: the “whipped cream” top</h3><p>A decorative cap that reads as dessert and gives an easy grip to open.</p></div></li>
+        <li><span class="k">2</span><div><h3>Fluted outer wall</h3><p>The cannelé’s iconic ribs also stiffen the thin walls without adding much material.</p></div></li>
+        <li><span class="k">3</span><div><h3>Snap-fit with a 0.2 mm gap</h3><p>Tool-free and repeatable. FDM parts vary with extrusion width, shrinkage and surface texture, so a 0.2 mm gap at the mating surfaces balances a secure fit with easy assembly: tighter can bind, looser can wobble.</p></div></li>
+        <li><span class="k">4</span><div><h3>Internal storage cavity</h3><p>Inner space optimised for small items; the scaled-up version fits stationery and dessert cutlery.</p></div></li>
+        <li><span class="k">5</span><div><h3>Stable, anti-tip base</h3><p>A wider footprint keeps it steady when it’s loaded with clips or cutlery.</p></div></li>
+      </ol>
+      <div class="callout" data-fade>
+        <b>Problem → solution</b>
+        <p>Hollowing out non-critical solid regions saved filament and print time, keeping the print under the filament limit. But it left an overhang under the snap that would need supports, leaving marks and hurting snap accuracy.</p>
+        <p>A small triangular rib under the snap fixed both: fewer supports and a cleaner surface, plus a stronger snap root that resists fatigue from repeated opening.</p>
+      </div>
+      <div class="sections3" data-fade>
+        <figure><img src="../assets/img/cannele-section-hollow.webp" alt="Section view of the body showing internal hollowing" loading="lazy"></figure>
+        <figure><img src="../assets/img/cannele-section-lid.webp" alt="Section view of the lid and snap" loading="lazy"></figure>
+        <figure><img src="../assets/img/cannele-section-rib.webp" alt="Section view showing the triangular rib support" loading="lazy"></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 03 工程图 ========== -->
+  <section class="stage-sec">
+    <div class="stage-label"><span class="step">03</span><h2>Technical drawing</h2></div>
+    <div class="stage-body">
+      <div class="drawing" data-fade>
+        <img src="../assets/img/cannele-drawing.webp" alt="Technical drawing of the Cannelé storage box: plan, isometric and two elevations with dimensions" loading="lazy" width="1113" height="1400">
+        <dl class="dims">
+          <div><dt>Max diameter</dt><dd>72.94 mm</dd></div>
+          <div><dt>Overall height</dt><dd>≈ 97.1 mm</dd></div>
+          <div><dt>Internal base</dt><dd>Ø 56.7 mm</dd></div>
+          <div><dt>Material</dt><dd>PLA</dd></div>
+          <div><dt>Sheet · scale</dt><dd>A4 · 1:2</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 04 打印 ========== -->
+  <section class="stage-sec">
+    <div class="stage-label"><span class="step">04</span><h2>Print &amp; prototype</h2></div>
+    <div class="stage-body">
+      <p data-fade>The body is printed upright to keep it round and keep the inside volume clean. The lid is printed flat, which cuts overhangs and keeps the cream top neat with minimal support. The supports snap away easily, and the lid opens and closes smoothly with no post-processing.</p>
+      <div class="gallery2" data-fade>
+        <figure><div class="frame"><img src="../assets/img/cannele-print-support.webp" alt="Printed lid with supports being removed with pliers" loading="lazy"></div><figcaption class="mono"><span>Support removal</span><span class="muted">Lid printed flat</span></figcaption></figure>
+        <figure><div class="frame"><img src="../assets/img/cannele-print-parts.webp" alt="Printed body and lid side by side" loading="lazy"></div><figcaption class="mono"><span>Two parts</span><span class="muted">Body upright, lid flat</span></figcaption></figure>
+        <figure><div class="frame"><img src="../assets/img/cannele-print-use.webp" alt="Printed box holding pens with the lid beside it" loading="lazy"></div><figcaption class="mono"><span>In use</span><span class="muted">Pens and markers</span></figcaption></figure>
+        <figure><div class="frame"><img src="../assets/img/cannele-print-body.webp" alt="Printed white PLA box with lid closed" loading="lazy"></div><figcaption class="mono"><span>Closed</span><span class="muted">Press-fit, no glue</span></figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 05 场景 ========== -->
+  <section class="stage-sec">
+    <div class="stage-label"><span class="step">05</span><h2>On the desk</h2></div>
+    <div class="stage-body">
+      <p class="big" data-fade>A cannelé that doesn’t go stale: it keeps your desk tidy and your mood sweet.</p>
+      <div class="gallery2" data-fade>
+        <figure><div class="frame cover"><img src="../assets/img/cannele-table.webp" alt="Rendered afternoon-tea table with the box on a lace doily" loading="lazy"></div><figcaption class="mono"><span>Afternoon tea</span><span class="muted">Looks like dessert, stores cutlery</span></figcaption></figure>
+        <figure><div class="frame"><img src="../assets/img/cannele-pencils.webp" alt="Chocolate-coloured box holding colour pencils" loading="lazy"></div><figcaption class="mono"><span>Desk</span><span class="muted">Larger size for stationery</span></figcaption></figure>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ========== 礼物 & 定制 ========== -->
+<section class="band" aria-labelledby="gift-title">
+  <div class="wrap">
+    <div class="gift">
+      <div data-fade>
+        <p class="mono accent" style="margin:0 0 10px">Valentine’s edition</p>
+        <h2 id="gift-title">Your perfect Valentine’s gift.</h2>
+        <p class="script">Decorate your own.</p>
+        <ul class="opts">
+          <li><span>Topper</span>Cherry, heart or letter</li>
+          <li><span>Colourway</span>Chocolate, vanilla, strawberry, jelly</li>
+          <li><span>Engraving</span>A message on the underside: “to ___, from ___”</li>
+        </ul>
+      </div>
+      <div class="engrave" data-fade>
+        <span class="k">Try the engraving · underside preview</span>
+        <svg viewBox="0 0 300 300" role="img" aria-labelledby="eng-desc">
+          <desc id="eng-desc">The underside of the box with your engraved message</desc>
+          <defs>
+            <radialGradient id="ug" cx="45%" cy="40%" r="70%"><stop offset="0" stop-color="#B42536"/><stop offset="1" stop-color="#7E1422"/></radialGradient>
+          </defs>
+          <path id="flute" fill="url(#ug)"/>
+          <circle cx="150" cy="150" r="96" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/>
+          <text id="eng-to" x="150" y="138" text-anchor="middle" fill="#F6DADA" style="font-family:'Pinyon Script','Snell Roundhand',cursive;font-size:34px">to you</text>
+          <text id="eng-from" x="150" y="182" text-anchor="middle" fill="#F6DADA" style="font-family:'Pinyon Script','Snell Roundhand',cursive;font-size:34px">from Daisy</text>
+        </svg>
+        <div class="fields">
+          <label for="f-to">To<input id="f-to" maxlength="14" value="you" autocomplete="off"></label>
+          <label for="f-from">From<input id="f-from" maxlength="14" value="Daisy" autocomplete="off"></label>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <a class="doc-link" href="../assets/docs/Cannele_StorageBox_Slides.pdf" target="_blank" rel="noopener" data-fade>
+    <span class="mono accent">Explore more details</span>
+    <span class="doc-title">Cannelé StorageBox slides</span>
+    <span class="mono muted">Features, technical drawing, scenarios, annotated design · 4 pages · PDF</span>
+    <i aria-hidden="true">↗</i>
+  </a>
+
+  <nav class="next" aria-label="More work">
+    <a class="btn" href="airevo.html">← airevo</a>
+    <a class="big-link" href="delivery-vehicle.html">Next: Hando <i>→</i></a>
+  </nav>
+</div>
+
+<script src="../js/main.js"></script>
+<script>
+  // fluted underside outline (16 lobes)
+  (function () {
+    var d = '', N = 16, R = 132, r = 120;
+    for (var i = 0; i <= 360; i += 2) {
+      var a = i * Math.PI / 180, rr = r + (R - r) * Math.pow(Math.abs(Math.cos(a * N / 2)), 0.6);
+      d += (i ? 'L' : 'M') + (150 + rr * Math.cos(a)).toFixed(1) + ' ' + (150 + rr * Math.sin(a)).toFixed(1);
+    }
+    document.getElementById('flute').setAttribute('d', d + 'Z');
+    function upd() {
+      document.getElementById('eng-to').textContent = 'to ' + (document.getElementById('f-to').value.trim() || '___');
+      document.getElementById('eng-from').textContent = 'from ' + (document.getElementById('f-from').value.trim() || '___');
+    }
+    document.getElementById('f-to').addEventListener('input', upd);
+    document.getElementById('f-from').addEventListener('input', upd);
+  })();
+  window.addEventListener('message', function (e) {
+    if (e.data && e.data.canneleHeight) document.getElementById('model-frame').style.height = e.data.canneleHeight + 'px';
+  });
+</script>
+</body>
+</html>

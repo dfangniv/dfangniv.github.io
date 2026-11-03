@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ImpPets app demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ===== Demo layout: notes on the left, phone on the right ===== */
+    body { background: var(--bg); }
+    .demo { display: flex; flex-wrap: wrap-reverse; gap: 40px clamp(32px, 6vw, 96px); align-items: flex-start; padding-block: 8px 24px; }
+    .notes { flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 24px; position: sticky; top: 24px; }
+    .notes .screen-name { font-family: var(--mono); font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: #6E68C9; }
+    .notes h2 { margin: 0; font-weight: 300; font-size: clamp(30px, 3.4vw, 46px); line-height: 1.05; letter-spacing: -.02em; }
+    .notes .say { margin: 0; font-style: italic; font-size: 19px; line-height: 1.5; color: #3B3F52; max-width: 40ch; }
+    .notes .try { margin: 0; display: flex; gap: 10px; align-items: baseline; font-size: 16px; }
+    .notes .try b { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-weight: 500; white-space: nowrap; }
+    .device-card { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 16px; align-items: center; border-top: 1px solid var(--ink); padding-top: 18px; }
+    .device-card img { width: 112px; height: auto; transition: transform .5s var(--ease); }
+    .device-card img.bump { transform: scale(1.08) rotate(-4deg); }
+    .device-card .mono { font-size: 11px; }
+    .device-card strong { display: block; font-weight: 400; font-size: 22px; margin: 4px 0 8px; }
+    .meter { height: 6px; background: var(--line); border-radius: 99px; overflow: hidden; }
+    .meter span { display: block; height: 100%; background: #8C87D6; border-radius: 99px; transition: width .6s var(--ease); }
+    .flowlist { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+    .flowlist li { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; color: var(--muted); }
+    .flowlist li.done { border-color: #8C87D6; color: #4E48A8; background: #ECEAFB; }
+    .reset { align-self: flex-start; }
+
+    .phone-wrap { flex: 0 1 390px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .phone { width: min(390px, 100%); aspect-ratio: 390 / 812; background: #16161B; border-radius: 54px; padding: 12px; box-shadow: 0 40px 80px -30px rgba(40, 30, 90, .45); position: relative; }
+    .phone::before { content: ""; position: absolute; top: 22px; left: 50%; transform: translateX(-50%); width: 108px; height: 30px; background: #16161B; border-radius: 20px; z-index: 5; }
+    .phone-hint { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+
+    /* ===== The app (its own design language: ImpPets brand) ===== */
+    .app {
+      --a-bg: #F5F3FC; --a-card: #FFFFFF; --a-navy: #1A2855; --a-lilac: #A2A0DB; --a-soft: #ECEAFB; --a-text: #1E2235; --a-muted: #6F7489; --a-yolk: #F5BC44; --a-line: #E6E3F3;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
+      color: var(--a-text); background: var(--a-bg);
+      width: 100%; height: 100%; border-radius: 42px; overflow: hidden; position: relative; display: flex; flex-direction: column; font-size: 14px; line-height: 1.35;
+    }
+    .app button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
+    .app :focus-visible { outline: 2px solid var(--a-navy); outline-offset: 2px; }
+    .status { display: flex; justify-content: space-between; padding: 16px 28px 6px; font-size: 14px; font-weight: 600; flex: none; }
+    .status span:last-child { letter-spacing: 2px; font-size: 11px; }
+    .scr { flex: 1; overflow-y: auto; padding: 8px 18px 24px; scrollbar-width: none; }
+    .scr::-webkit-scrollbar { display: none; }
+    .tabs { flex: none; display: grid; grid-template-columns: repeat(4, 1fr); padding: 8px 10px 22px; background: rgba(255,255,255,.92); border-top: 1px solid var(--a-line); }
+    .tab { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10.5px; color: var(--a-muted); padding: 4px 0; }
+    .tab .ic { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; }
+    .tab[aria-current="page"] { color: var(--a-navy); font-weight: 600; }
+    .tab[aria-current="page"] .ic { background: var(--a-navy); color: #fff; }
+    .ic svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+    .h-sub { color: var(--a-muted); font-size: 13px; margin: 4px 0 0; }
+    .h1 { font-size: 26px; font-weight: 700; letter-spacing: -.02em; margin: 2px 0 0; }
+    .sec { font-size: 16px; font-weight: 700; margin: 22px 0 10px; }
+    .card { background: var(--a-card); border-radius: 22px; padding: 14px; box-shadow: 0 6px 20px -12px rgba(40, 30, 90, .25); }
+    .row-item { display: flex; gap: 12px; align-items: center; padding: 10px 0; }
+    .row-item + .row-item { border-top: 1px solid var(--a-line); }
+    .ri-ic { width: 34px; height: 34px; border-radius: 12px; background: var(--a-soft); color: var(--a-navy); display: grid; place-items: center; flex: none; }
+    .ri-ic svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .ri-t { font-weight: 600; font-size: 13.5px; }
+    .ri-s { color: var(--a-muted); font-size: 12px; }
+    .av { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 13px; color: #fff; flex: none; }
+
+    .pet-card { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 12px; align-items: center; }
+    .pet-card img { width: 112px; height: 112px; object-fit: cover; border-radius: 24px; background: var(--a-soft); }
+    .k { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--a-muted); font-weight: 600; }
+    .pet-name { font-size: 22px; font-weight: 700; margin: 2px 0; }
+    .bar { height: 7px; border-radius: 9px; background: var(--a-soft); overflow: hidden; margin-top: 8px; }
+    .bar span { display: block; height: 100%; background: linear-gradient(90deg, var(--a-lilac), var(--a-navy)); border-radius: 9px; transition: width .6s cubic-bezier(.16,1,.3,1); }
+    .grew { margin-top: 12px; font-size: 12px; color: var(--a-muted); display: flex; gap: 6px; align-items: center; }
+
+    .seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--a-card); border-radius: 999px; padding: 4px; margin-top: 14px; }
+    .seg button { padding: 9px 0; border-radius: 999px; font-weight: 600; font-size: 13px; color: var(--a-muted); }
+    .seg button[aria-pressed="true"] { background: var(--a-navy); color: #fff; }
+    .search { margin-top: 12px; display: flex; gap: 8px; align-items: center; background: var(--a-card); border-radius: 999px; padding: 10px 14px; color: var(--a-muted); font-size: 13px; }
+    .search svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; }
+    .chips { display: flex; gap: 8px; margin-top: 12px; overflow-x: auto; scrollbar-width: none; }
+    .chip { flex: none; padding: 7px 14px; border-radius: 999px; background: var(--a-card); font-size: 12.5px; font-weight: 600; color: var(--a-text); }
+    .chip[aria-pressed="true"] { background: var(--a-navy); color: #fff; }
+    .act { display: block; width: 100%; text-align: left; margin-top: 14px; padding: 0; overflow: hidden; }
+    .act .ph { height: 132px; background-size: cover; background-position: center; position: relative; }
+    .act .tags { position: absolute; left: 10px; top: 10px; display: flex; gap: 6px; }
+    .act .tags span, .tagpill { background: rgba(255,255,255,.9); color: var(--a-navy); font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 999px; }
+    .act .body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 4px; }
+    .act .org { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--a-muted); font-weight: 600; }
+    .act .tt { font-size: 16px; font-weight: 700; }
+    .meta-line { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--a-muted); }
+    .meta-line svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; flex: none; }
+    .going { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 12px; color: var(--a-muted); }
+    .stack { display: flex; }
+    .stack .av { width: 24px; height: 24px; font-size: 9px; border: 2px solid #fff; margin-left: -6px; }
+    .stack .av:first-child { margin-left: 0; }
+    .booked-badge { margin-left: auto; font-size: 11px; font-weight: 700; color: #2F7D4F; background: #E3F4EA; padding: 3px 8px; border-radius: 999px; }
+
+    .post { margin-top: 12px; }
+    .post p { margin: 8px 0 10px; font-size: 14px; }
+
+    .back { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: var(--a-navy); padding: 4px 0; }
+    .hero-ph { height: 170px; border-radius: 22px; background-size: cover; background-position: center; margin-top: 8px; position: relative; }
+    .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+    .btn-a { padding: 12px 0; border-radius: 999px; font-weight: 700; font-size: 13.5px; text-align: center; }
+    .btn-a.primary { background: var(--a-navy); color: #fff; }
+    .btn-a.ghost { background: var(--a-card); color: var(--a-navy); box-shadow: inset 0 0 0 1.5px var(--a-navy); }
+    .btn-a.on { background: var(--a-soft); color: var(--a-navy); box-shadow: none; }
+    .small-btn { padding: 7px 14px; border-radius: 999px; background: var(--a-navy); color: #fff; font-size: 12px; font-weight: 700; flex: none; }
+    .small-btn.sent { background: var(--a-soft); color: var(--a-navy); }
+    .link-btn { font-size: 12px; font-weight: 700; color: #4E48A8; text-decoration: underline; padding: 0; }
+
+    .months { display: flex; gap: 8px; align-items: center; margin-top: 14px; }
+    .months span { padding: 6px 12px; border-radius: 999px; background: var(--a-card); font-size: 12px; font-weight: 600; }
+    .months span.on { background: var(--a-navy); color: #fff; }
+    .week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 12px; text-align: center; }
+    .day { padding: 8px 0; border-radius: 16px; display: flex; flex-direction: column; gap: 2px; font-size: 11px; color: var(--a-muted); }
+    .day b { font-size: 16px; color: var(--a-text); }
+    .day.on { background: var(--a-navy); color: #cfd2ef; }
+    .day.on b { color: #fff; }
+    .day i { width: 5px; height: 5px; border-radius: 50%; background: var(--a-lilac); margin: 2px auto 0; font-style: normal; }
+    .day.on i { background: #fff; }
+    .tl { position: relative; padding-left: 18px; }
+    .tl::before { content: ""; position: absolute; left: 5px; top: 18px; bottom: 18px; width: 1.5px; background: var(--a-line); }
+    .tl .card { margin-top: 10px; position: relative; }
+    .tl .card::before { content: ""; position: absolute; left: -18px; top: 18px; width: 11px; height: 11px; border-radius: 50%; background: var(--a-yolk); border: 2px solid var(--a-bg); }
+    .time { font-size: 12px; color: var(--a-muted); display: flex; gap: 6px; align-items: center; }
+    .time svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; flex: none; }
+    .empty { color: var(--a-muted); font-size: 13px; padding: 14px; text-align: center; }
+
+    .nfc-card { background: var(--a-navy); color: #fff; border-radius: 24px; padding: 18px; margin-top: 14px; }
+    .nfc-card .k { color: #B9BCE6; }
+    .nfc-card h3 { margin: 4px 0; font-size: 18px; }
+    .nfc-card p { margin: 0; font-size: 12.5px; color: #CFD2EF; }
+    .nfc-card .show { margin-top: 14px; width: 100%; background: #fff; color: var(--a-navy); border-radius: 999px; padding: 12px 0; font-weight: 700; }
+    .chat-item { display: flex; gap: 12px; align-items: center; padding: 11px 0; width: 100%; text-align: left; }
+    .chat-item + .chat-item { border-top: 1px solid var(--a-line); }
+    .chat-item .mid { flex: 1; min-width: 0; }
+    .chat-item .last { color: var(--a-muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .badge { min-width: 18px; height: 18px; border-radius: 9px; background: #D9443B; color: #fff; font-size: 10.5px; font-weight: 700; display: grid; place-items: center; padding: 0 5px; }
+
+    .overlay { position: absolute; inset: 0; background: rgba(26, 40, 85, .55); backdrop-filter: blur(6px); display: flex; align-items: flex-end; z-index: 10; border-radius: 42px; }
+    .sheet { background: var(--a-bg); width: 100%; border-radius: 30px 30px 42px 42px; padding: 18px 18px 26px; max-height: 92%; overflow-y: auto; }
+    .tapping { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 18px 0 8px; text-align: center; }
+    .rings { position: relative; width: 120px; height: 120px; display: grid; place-items: center; }
+    .rings i { position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--a-lilac); animation: ring 1.6s ease-out infinite; }
+    .rings i:nth-child(2) { animation-delay: .5s; }
+    .rings img { width: 72px; position: relative; }
+    @keyframes ring { from { transform: scale(.5); opacity: 1; } to { transform: scale(1.3); opacity: 0; } }
+    .profile { background: var(--a-navy); color: #fff; border-radius: 26px; padding: 18px; }
+    .profile .top { display: flex; gap: 14px; align-items: center; }
+    .profile .mc { width: 64px; height: 64px; border-radius: 20px; background: #8C87D6; display: grid; place-items: center; font-size: 22px; font-weight: 700; }
+    .profile .nm { font-size: 20px; font-weight: 700; }
+    .profile .nm small { font-size: 11px; font-weight: 500; color: #CFD2EF; margin-left: 4px; }
+    .profile .hd { font-size: 12px; color: #CFD2EF; }
+    .facts3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+    .facts3 div { background: rgba(255,255,255,.1); border-radius: 14px; padding: 8px; font-size: 12px; font-weight: 600; }
+    .facts3 span { display: block; font-size: 9.5px; letter-spacing: .08em; color: #B9BCE6; font-weight: 600; }
+    .profile .bio { margin: 12px 0 0; font-size: 13px; line-height: 1.45; }
+    .interests { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+
+    .chat-head { display: flex; gap: 10px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid var(--a-line); }
+    .msgs { display: flex; flex-direction: column; gap: 8px; padding: 14px 0; }
+    .msg { max-width: 78%; padding: 9px 13px; border-radius: 18px; font-size: 13.5px; }
+    .msg.them { background: var(--a-card); align-self: flex-start; border-bottom-left-radius: 6px; }
+    .msg.me { background: var(--a-navy); color: #fff; align-self: flex-end; border-bottom-right-radius: 6px; }
+    .compose { display: flex; gap: 8px; align-items: center; background: var(--a-card); border-radius: 999px; padding: 6px 6px 6px 14px; }
+    .compose input { flex: 1; min-width: 0; border: 0; background: none; font: inherit; font-size: 13.5px; color: var(--a-text); outline: none; }
+    .compose button { width: 34px; height: 34px; border-radius: 50%; background: var(--a-navy); color: #fff; display: grid; place-items: center; }
+
+    .toast { position: absolute; left: 16px; right: 16px; bottom: 96px; background: var(--a-navy); color: #fff; padding: 12px 14px; border-radius: 16px; font-size: 13px; z-index: 20; box-shadow: 0 10px 30px -10px rgba(0,0,0,.4); opacity: 0; transform: translateY(10px); transition: opacity .3s, transform .3s; pointer-events: none; }
+    .toast.on { opacity: 1; transform: none; }
+    .toast b { color: var(--a-yolk); }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="demo">
+    <!-- ===== 左边：解说（文字来自报告总页面） ===== -->
+    <aside class="notes" aria-live="polite">
+      <span class="screen-name" id="n-name">Home</span>
+      <h2 id="n-title">Your pet grows as you settle in.</h2>
+      <p class="say" id="n-say"></p>
+      <p class="try"><b>Try this</b><span id="n-try"></span></p>
+      <div class="device-card">
+        <img id="dev-img" src="../assets/img/imppets-cut-egg.webp" alt="Your ImpPet device">
+        <div>
+          <span class="mono muted">Your ImpPet device · <span id="sp">3</span> social points</span>
+          <strong id="dev-stage">A mystery egg</strong>
+          <div class="meter" aria-hidden="true"><span id="dev-meter" style="width:30%"></span></div>
+        </div>
+      </div>
+      <ul class="flowlist" aria-label="Flow you have tried">
+        <li data-flow="explore">Explore</li>
+        <li data-flow="book">Book</li>
+        <li data-flow="invite">Go together · invite</li>
+        <li data-flow="chat">Start chat</li>
+        <li data-flow="calendar">Calendar</li>
+        <li data-flow="nfc">Tap NFC</li>
+      </ul>
+      <button class="btn reset" type="button" id="reset">↺ Start over</button>
+    </aside>
+
+    <!-- ===== 右边：手机 ===== -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="app" id="app">
+          <div class="status" aria-hidden="true"><span>9:41</span><span>●●● ▮</span></div>
+          <div class="scr" id="scr"></div>
+          <nav class="tabs" id="tabs" aria-label="App tabs"></nav>
+          <div class="toast" id="toast" role="status"></div>
+        </div>
+      </div>
+      <span class="phone-hint">Tap around · everything is clickable</span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var IMG = '../assets/img/';
+  var I = {
+    home: '<svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>',
+    explore: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>',
+    cal: '<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>',
+    friends: '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5c2 .6 3.3 2.4 3.5 5.5"/></svg>',
+    pin: '<svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
+    clock: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+    search: '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',
+    people: '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5"/></svg>',
+    flag: '<svg viewBox="0 0 24 24"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg>',
+    send: '<svg viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-2-7z"/></svg>',
+    nfc: '<svg viewBox="0 0 24 24"><path d="M6 8a8 8 0 0 1 0 8M9.5 6a12 12 0 0 1 0 12M13 4a16 16 0 0 1 0 16"/></svg>'
+  };
+  var COL = { AC: '#E39A7A', JP: '#7FB59A', SR: '#E7A9C0', KT: '#8C9AD6', PN: '#C9A15A', DF: '#8C87D6', MC: '#8C87D6' };
+  function av(ini) { return '<span class="av" style="background:' + (COL[ini] || '#8C87D6') + '">' + ini + '</span>'; }
+
+  /* ---------- 数据（示例） ---------- */
+  var ACTS = [
+    { id: 'coffee', title: 'Specialty Coffee Tasting', org: 'Imperial Coffee Society', place: 'South Ken · Notes Coffee', time: 'Tue 4 Nov · 4:30 PM', day: 4, at: '4:30 PM', cat: 'Social', tags: ['Cozy', 'Foodie'], going: 12, interested: 34, img: IMG + 'imppets-event-coffee.webp',
+      about: 'Taste three single-origin pours from Ethiopia, Colombia and Kenya. Bring a friend or come solo — we’ll match you with a tasting partner.', friends: ['AC'] },
+    { id: 'run', title: 'Sunset Run in Hyde Park', org: 'Running Club', place: 'Hyde Park · Queens Gate', time: 'Tue 4 Nov · 6:00 PM', day: 4, at: '6:00 PM', cat: 'Wellness', tags: ['Easy pace'], going: 18, interested: 22, color: 'linear-gradient(135deg,#F5BC44,#E7A9C0 60%,#A2A0DB)',
+      about: 'A relaxed 5k loop around the Serpentine as the sun goes down. All paces welcome.', friends: [] },
+    { id: 'climb', title: 'Beginner Climbing Session', org: 'Mountaineering Club', place: 'The Castle Climbing Centre', time: 'Sat 8 Nov · 11:00 AM', day: 8, at: '11:00 AM', cat: 'Wellness', tags: ['Beginner'], going: 9, interested: 15, color: 'linear-gradient(135deg,#A2A0DB,#1A2855)',
+      about: 'Shoes and harness included. Instructors will teach you the basics of bouldering and belaying.', friends: ['JP'] },
+    { id: 'film', title: 'Film Night & Pizza', org: 'Film Society', place: 'Union Building', time: 'Thu 6 Nov · 7:00 PM', day: 6, at: '7:00 PM', cat: 'Culture', tags: ['Chill'], going: 25, interested: 40, color: 'linear-gradient(135deg,#1A2855,#8C87D6)',
+      about: 'Members pick a film each week. Free pizza for the first 30 people.', friends: [] }
+  ];
+  var SUGGEST = [
+    { ini: 'SR', name: 'Sofia R.', why: 'Also likes coffee & film' },
+    { ini: 'KT', name: 'Kenji T.', why: 'Same department' },
+    { ini: 'PN', name: 'Priya N.', why: '2 mutual friends' }
+  ];
+  var NAMES = { AC: 'Amelia C.', JP: 'Jordan P.', SR: 'Sofia R.', KT: 'Kenji T.', PN: 'Priya N.', MC: 'Mia Chen' };
+  var POSTS = [
+    { id: 'hack', ini: 'JP', text: 'Post and find your Hackathon teammates! Looking for 2 people for IC Hack — a designer would be amazing.', tag: 'Hackathon' },
+    { id: 'dimsum', ini: 'SR', text: 'Anyone up for Sunday dim sum in Chinatown? Table for 6, 3 spots left.', tag: 'Food' }
+  ];
+
+  /* ---------- 状态 ---------- */
+  var S;
+  function fresh() {
+    return { tab: 'home', view: null, points: 3, booked: { run: true }, interested: {}, invited: {}, joined: {}, friends: ['AC', 'JP'],
+      seg: 'activity', chip: 'For you', flow: {}, journey: [{ i: 'flag', t: 'Joined Beginner Climbing', s: 'The Castle Climbing Centre' }],
+      chats: { AC: [['them', 'See you at the coffee tasting!']], JP: [['them', 'Library at 6? Mochi misses you']] }, chatWith: null, sheet: null };
+  }
+  S = fresh();
+
+  var NOTES = {
+    home: { name: 'Home', title: 'Your pet grows as you settle in.', say: 'Pet, XP history, profile editor, privacy toggle, basic app setting.', try: 'Head to Explore and book something. Watch Mochi’s points go up here.' },
+    explore: { name: 'Explore', title: 'One place for everything on campus.', say: 'Activity: posts by societies. Student Space: posts by students. Example scenario: “Post and find your Hackathon teammates!”', try: 'Open “Specialty Coffee Tasting”, or switch to Student Space.' },
+    detail: { name: 'Explore → Go Together', title: 'Never go alone.', say: 'Click the activity you find interesting, see detailed information and click “Go Together” to check who from your friend list is going! None of your friends are going? No worries! ImpPet recommends users based on your shared interests.', try: 'Book it, then press Invite next to someone.' },
+    calendar: { name: 'Calendar', title: 'Your week, in one view.', say: 'After you have “interested” or “booked” an activity from the Explore page, you can see all of them on the Calendar page! No more wasting time scrolling in group chats or email inbox to find activities.', try: 'Book another activity and come back here.' },
+    friends: { name: 'Friends', title: 'Tap to connect.', say: 'Tap to introduce and add friends, and keep in touch by “Go Together”! Tap your ImpPet’s NFC to exchange profiles. (Tip: you can also add links to your portfolio in your bio!)', try: 'Press “Show my card” to tap with someone nearby.' },
+    chat: { name: 'Invite & start chat', title: 'No cold messaging.', say: 'Found someone you want to go with? Just click “invite”, and an invitation will be sent to the person. No cold messaging required!', try: 'Type a message and send it.' }
+  };
+
+  /* ---------- 工具 ---------- */
+  var scr = document.getElementById('scr'), tabsEl = document.getElementById('tabs'), toastEl = document.getElementById('toast');
+  var toastT;
+  function toast(html) { toastEl.innerHTML = html; toastEl.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(function () { toastEl.classList.remove('on'); }, 2400); }
+  function flow(k) { S.flow[k] = true; }
+  function stage(p) { return p >= 8 ? 2 : p >= 4 ? 1 : 0; }
+  function addPoints(n, why) {
+    var before = stage(S.points);
+    S.points += n;
+    var after = stage(S.points);
+    if (after > before) toast(after === 1 ? '<b>Your egg is hatching!</b> +' + n + ' social points' : '<b>Your pet has grown up!</b> +' + n + ' social points');
+    else toast('+' + n + ' social point' + (n > 1 ? 's' : '') + ' · ' + why);
+  }
+  function act(id) { for (var i = 0; i < ACTS.length; i++) if (ACTS[i].id === id) return ACTS[i]; }
+  function esc(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+  /* ---------- 页面 ---------- */
+  function vHome() {
+    var p = S.points, st = stage(p), next = st === 0 ? 4 : st === 1 ? 8 : 8;
+    var pct = st === 2 ? 100 : Math.round(((p - (st === 0 ? 0 : 4)) / 4) * 100);
+    var stageName = ['Mist Sprout stage', 'Sprout stage', 'Bloom stage'][st];
+    var nBooked = Object.keys(S.booked).length;
+    var j = S.journey.concat([{ i: 'people', t: S.friends.length + ' friend' + (S.friends.length > 1 ? 's' : '') + ' in your circle', s: 'Tap Friends to say hi' }]);
+    return '<p class="h-sub">Good afternoon,</p><h1 class="h1">Hi, Daisy</h1>' +
+      '<div class="card pet-card" style="margin-top:14px"><img src="' + IMG + 'imppets-mochi.webp" alt="Mochi, your companion pet">' +
+      '<div><span class="k">Your companion</span><div class="pet-name">Mochi</div><div class="ri-s">' + stageName + ' · ' + nBooked + ' event' + (nBooked > 1 ? 's' : '') + ' booked</div>' +
+      '<div class="bar"><span style="width:' + pct + '%"></span></div><div class="ri-s" style="margin-top:6px">' + (st === 2 ? 'Fully grown!' : p + ' / ' + next + ' points to grow') + '</div></div></div>' +
+      '<h2 class="sec">My campus journey</h2><div class="card">' +
+      j.slice().reverse().map(function (x) { return '<div class="row-item"><span class="ri-ic">' + I[x.i] + '</span><div><div class="ri-t">' + esc(x.t) + '</div><div class="ri-s">' + esc(x.s) + '</div></div></div>'; }).join('') + '</div>' +
+      '<h2 class="sec">Who’s on campus</h2><div class="card"><div class="row-item">' + av('DF') + '<div><div class="ri-t">Daisy Fang</div><div class="ri-s">MEng Design Engineering</div></div></div></div>';
+  }
+
+  function actCard(a) {
+    var ph = a.img ? 'background-image:url(' + a.img + ')' : 'background:' + a.color;
+    return '<button class="card act" data-open="' + a.id + '"><div class="ph" style="' + ph + '"><div class="tags">' + a.tags.map(function (t) { return '<span>' + t + '</span>'; }).join('') + '</div></div>' +
+      '<div class="body"><span class="org">' + a.org + '</span><span class="tt">' + a.title + '</span>' +
+      '<span class="meta-line">' + I.clock + a.time + '</span><span class="meta-line">' + I.pin + a.place + '</span>' +
+      '<span class="going"><span class="stack">' + ['AC', 'JP', 'SR'].map(av).join('') + '</span>' + (a.going + (S.booked[a.id] ? 1 : 0)) + ' going · ' + a.interested + ' interested' +
+      (S.booked[a.id] ? '<span class="booked-badge">Booked</span>' : '') + '</span></div></button>';
+  }
+  function vExplore() {
+    var h = '<h1 class="h1">Explore</h1><p class="h-sub">Find your next campus moment</p>' +
+      '<div class="seg" role="group" aria-label="Feed"><button data-seg="activity" aria-pressed="' + (S.seg === 'activity') + '">Activity</button><button data-seg="space" aria-pressed="' + (S.seg === 'space') + '">Student Space</button></div>' +
+      '<div class="search">' + I.search + 'Try ‘coffee’, ‘film night’…</div>';
+    if (S.seg === 'activity') {
+      h += '<div class="chips">' + ['For you', 'Social', 'Wellness', 'Culture'].map(function (c) { return '<button class="chip" data-chip="' + c + '" aria-pressed="' + (S.chip === c) + '">' + c + '</button>'; }).join('') + '</div>';
+      ACTS.filter(function (a) { return S.chip === 'For you' || a.cat === S.chip; }).forEach(function (a) { h += actCard(a); });
+    } else {
+      POSTS.forEach(function (p) {
+        var j = S.joined[p.id];
+        h += '<div class="card post"><div class="row-item" style="padding:0">' + av(p.ini) + '<div><div class="ri-t">' + NAMES[p.ini] + '</div><div class="ri-s">Student post · ' + p.tag + '</div></div></div><p>' + p.text + '</p>' +
+          '<button class="small-btn' + (j ? ' sent' : '') + '" data-join="' + p.id + '">' + (j ? 'You’re in ✓' : 'I’m in') + '</button></div>';
+      });
+    }
+    return h;
+  }
+
+  function vDetail(id) {
+    var a = act(id), ph = a.img ? 'background-image:url(' + a.img + ')' : 'background:' + a.color;
+    var h = '<button class="back" data-back>‹ Explore</button>' +
+      '<div class="hero-ph" style="' + ph + '"></div>' +
+      '<p class="org" style="margin:14px 0 2px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--a-muted);font-weight:600">' + a.org + '</p>' +
+      '<h1 class="h1" style="font-size:22px">' + a.title + '</h1>' +
+      '<div class="meta-line" style="margin-top:8px">' + I.clock + a.time + '</div><div class="meta-line" style="margin-top:4px">' + I.pin + a.place + '</div>' +
+      '<p style="margin:12px 0 0;font-size:13.5px">' + a.about + '</p>' +
+      '<div class="btns"><button class="btn-a ghost' + (S.interested[id] ? ' on' : '') + '" data-int="' + id + '">' + (S.interested[id] ? '★ Interested' : '☆ Interested') + '</button>' +
+      '<button class="btn-a primary' + (S.booked[id] ? ' on' : '') + '" data-book="' + id + '">' + (S.booked[id] ? 'Booked ✓' : 'Book') + '</button></div>' +
+      '<h2 class="sec">Go together</h2><p class="ri-s" style="margin:-4px 0 8px">Friends going</p><div class="card">';
+    if (a.friends.length) a.friends.forEach(function (f) { h += '<div class="row-item">' + av(f) + '<div style="flex:1"><div class="ri-t">' + NAMES[f] + '</div><div class="ri-s">Going</div></div><button class="link-btn" data-chat="' + f + '">Message</button></div>'; });
+    else h += '<div class="empty">None of your friends are going yet. No worries!</div>';
+    h += '</div><p class="ri-s" style="margin:14px 0 8px">Suggested for you · shared interests</p><div class="card">';
+    SUGGEST.forEach(function (u) {
+      var k = id + ':' + u.ini, sent = S.invited[k];
+      h += '<div class="row-item">' + av(u.ini) + '<div style="flex:1;min-width:0"><div class="ri-t">' + u.name + '</div><div class="ri-s">' + u.why + '</div>' +
+        (sent ? '<button class="link-btn" data-chat="' + u.ini + '">Start chat →</button>' : '') + '</div>' +
+        '<button class="small-btn' + (sent ? ' sent' : '') + '" data-invite="' + k + '">' + (sent ? 'Invited ✓' : 'Invite') + '</button></div>';
+    });
+    return h + '</div>';
+  }
+
+  function vCalendar() {
+    var plans = ACTS.filter(function (a) { return S.booked[a.id] || S.interested[a.id]; });
+    var days = [['Mon', 3], ['Tue', 4], ['Wed', 5], ['Thu', 6], ['Fri', 7], ['Sat', 8], ['Sun', 9]];
+    var has = {}; plans.forEach(function (a) { has[a.day] = true; });
+    var h = '<p class="h-sub">2026</p><h1 class="h1">Your week</h1>' +
+      '<div class="months"><span>Sep</span><span>Oct</span><span class="on">Nov</span><span>Dec</span></div>' +
+      '<div class="week">' + days.map(function (d) { return '<div class="day' + (d[1] === 4 ? ' on' : '') + '">' + d[0] + '<b>' + d[1] + '</b>' + (has[d[1]] ? '<i></i>' : '<i style="visibility:hidden"></i>') + '</div>'; }).join('') + '</div>' +
+      '<div class="card row-item" style="margin-top:14px;padding:12px 14px"><img src="' + IMG + 'imppets-mochi.webp" alt="" style="width:44px;height:44px;border-radius:14px;object-fit:cover"><div><span class="k">Companion journey</span><div class="ri-t">Mochi has joined your week</div><div class="ri-s">' + plans.length + ' event' + (plans.length === 1 ? '' : 's') + ' planned</div></div></div>' +
+      '<h2 class="sec">This week’s plans</h2>';
+    if (!plans.length) return h + '<div class="card empty">Nothing yet. Book something in Explore.</div>';
+    h += '<div class="tl">' + plans.sort(function (a, b) { return a.day - b.day; }).map(function (a) {
+      return '<div class="card"><div class="time">' + I.clock + a.time + '<span class="tagpill" style="margin-left:auto;background:var(--a-soft)">' + (S.booked[a.id] ? 'Booked' : 'Interested') + '</span></div><div class="ri-t" style="margin-top:6px;font-size:15px">' + a.title + '</div><div class="meta-line" style="margin-top:4px">' + I.pin + a.place + '</div></div>';
+    }).join('') + '</div>';
+    return h;
+  }
+
+  function vFriends() {
+    var h = '<h1 class="h1">Friends</h1><p class="h-sub">Your Imperial circle</p>' +
+      '<div class="nfc-card"><span class="k">NFC profile</span><h3>Tap phones to connect</h3><p>Share your card with one tap — no usernames.</p><button class="show" data-nfc>Show my card ›</button></div>' +
+      '<h2 class="sec">Chats</h2><div class="card" style="padding:4px 14px">';
+    var order = ['AC', 'JP', 'SR', 'KT', 'PN', 'MC'].filter(function (k) { return S.chats[k]; });
+    order.forEach(function (k) {
+      var c = S.chats[k], last = c[c.length - 1];
+      h += '<button class="chat-item" data-chat="' + k + '">' + av(k) + '<div class="mid"><div class="ri-t">' + NAMES[k] + '</div><div class="last">' + esc(last[1]) + '</div></div>' + (last[0] === 'them' ? '<span class="badge">1</span>' : '') + '</button>';
+    });
+    h += '</div><h2 class="sec">Your circle · ' + S.friends.length + '</h2><div class="card" style="display:flex;gap:10px;flex-wrap:wrap">' + S.friends.map(function (f) { return '<span title="' + NAMES[f] + '">' + av(f) + '</span>'; }).join('') + '</div>';
+    return h;
+  }
+
+  function vChat(k) {
+    var c = S.chats[k] || [];
+    return '<button class="back" data-back>‹ Back</button>' +
+      '<div class="chat-head" style="margin-top:6px">' + av(k) + '<div><div class="ri-t">' + NAMES[k] + '</div><div class="ri-s">' + (S.friends.indexOf(k) > -1 ? 'In your circle' : 'Invited via Go Together') + '</div></div></div>' +
+      '<div class="msgs">' + c.map(function (m) { return '<div class="msg ' + m[0] + '">' + esc(m[1]) + '</div>'; }).join('') + '</div>' +
+      '<form class="compose" data-send="' + k + '"><label for="msg-in" class="ri-s" style="position:absolute;left:-9999px">Message</label><input id="msg-in" autocomplete="off" placeholder="Message ' + NAMES[k] + '"><button type="submit" aria-label="Send">' + I.send.replace('<svg', '<svg style="width:16px;height:16px;fill:none;stroke:#fff;stroke-width:2"') + '</button></form>';
+  }
+
+  function sheetNFC() {
+    if (S.sheet === 'tapping') return '<div class="overlay"><div class="sheet"><div class="tapping"><div class="rings"><i></i><i></i><img src="' + IMG + 'imppets-cut-hatch.webp" alt=""></div><div class="ri-t" style="font-size:16px">Hold your ImpPet near a friend’s phone…</div><div class="ri-s">Exchanging profiles</div></div></div></div>';
+    var added = S.friends.indexOf('MC') > -1;
+    return '<div class="overlay"><div class="sheet">' +
+      '<p class="k" style="text-align:center;margin:0 0 10px">NFC profile received</p>' +
+      '<div class="profile"><div class="top"><div class="mc">MC</div><div><div class="nm">Mia Chen<small>(she/her)</small></div><div class="hd">@miachen</div></div></div>' +
+      '<div class="facts3"><div><span>DEPT</span>Mathematics</div><div><span>ENTRY</span>2025</div><div><span>LEVEL</span>Undergrad</div></div>' +
+      '<p class="bio">New to London, into film photography, slow mornings, and figuring out where the best matcha is.</p></div>' +
+      '<div class="card row-item" style="margin-top:12px;padding:12px 14px"><img src="' + IMG + 'imppets-mochi.webp" alt="" style="width:44px;height:44px;border-radius:14px;object-fit:cover"><div><span class="k">Companion</span><div class="ri-t">Mochi · Bloom stage</div><div class="ri-s">12 events together</div></div></div>' +
+      '<div class="interests">' + ['Film photography', 'Hiking', 'Indie music'].map(function (t) { return '<span class="tagpill" style="background:var(--a-soft)">' + t + '</span>'; }).join('') + '</div>' +
+      '<div class="btns"><button class="btn-a ghost" data-close>Close</button><button class="btn-a primary' + (added ? ' on' : '') + '" data-addmia>' + (added ? 'Friends ✓' : 'Add friend') + '</button></div>' +
+      '</div></div>';
+  }
+
+  /* ---------- 渲染 ---------- */
+  var DEV = [['imppets-cut-egg.webp', 'A mystery egg'], ['imppets-cut-hatch.webp', 'Hatching!'], ['imppets-cut-chick.webp', 'All grown up']];
+  var lastStage = 0;
+  function render() {
+    var key = S.view ? S.view.type : S.tab;
+    var html = S.view ? (S.view.type === 'detail' ? vDetail(S.view.id) : vChat(S.view.id)) : ({ home: vHome, explore: vExplore, calendar: vCalendar, friends: vFriends })[S.tab]();
+    scr.innerHTML = html;
+    var old = document.querySelector('.app .overlay'); if (old) old.remove();
+    if (S.sheet) document.getElementById('app').insertAdjacentHTML('beforeend', sheetNFC());
+    tabsEl.innerHTML = [['home', 'Home', I.home], ['explore', 'Explore', I.explore], ['calendar', 'Calendar', I.cal], ['friends', 'Friends', I.friends]].map(function (t) {
+      return '<button class="tab" data-tab="' + t[0] + '"' + (!S.view && S.tab === t[0] ? ' aria-current="page"' : '') + '><span class="ic">' + t[2] + '</span>' + t[1] + '</button>';
+    }).join('');
+    var n = NOTES[key];
+    document.getElementById('n-name').textContent = n.name;
+    document.getElementById('n-title').textContent = n.title;
+    document.getElementById('n-say').textContent = n.say;
+    document.getElementById('n-try').textContent = n.try;
+    var st = stage(S.points), img = document.getElementById('dev-img');
+    document.getElementById('sp').textContent = S.points;
+    document.getElementById('dev-stage').textContent = DEV[st][1];
+    document.getElementById('dev-meter').style.width = Math.min(100, S.points / 8 * 100) + '%';
+    if (img.getAttribute('src') !== IMG + DEV[st][0]) img.setAttribute('src', IMG + DEV[st][0]);
+    if (st !== lastStage) { img.classList.add('bump'); setTimeout(function () { img.classList.remove('bump'); }, 500); lastStage = st; }
+    document.querySelectorAll('.flowlist li').forEach(function (li) { li.classList.toggle('done', !!S.flow[li.dataset.flow]); });
+  }
+  function go(fn) { fn(); render(); }
+
+  /* ---------- 交互 ---------- */
+  document.getElementById('app').addEventListener('click', function (e) {
+    var t = e.target.closest('button'); if (!t) return;
+    var d = t.dataset;
+    if (d.tab) go(function () { S.tab = d.tab; S.view = null; if (d.tab === 'explore') flow('explore'); if (d.tab === 'calendar') flow('calendar'); scr.scrollTop = 0; });
+    else if (d.open) go(function () { S.view = { type: 'detail', id: d.open, from: S.tab }; flow('explore'); scr.scrollTop = 0; });
+    else if (d.back !== undefined) go(function () { S.view = null; scr.scrollTop = 0; });
+    else if (d.seg) go(function () { S.seg = d.seg; });
+    else if (d.chip) go(function () { S.chip = d.chip; });
+    else if (d.int) go(function () { S.interested[d.int] = !S.interested[d.int]; if (S.interested[d.int]) toast('Saved to your Calendar as “Interested”'); });
+    else if (d.book) go(function () {
+      if (S.booked[d.book]) return;
+      S.booked[d.book] = true; flow('book');
+      var a = act(d.book); S.journey.push({ i: 'cal', t: 'Booked ' + a.title, s: a.place });
+      addPoints(1, 'added to your Calendar');
+    });
+    else if (d.invite) go(function () {
+      if (S.invited[d.invite]) return;
+      S.invited[d.invite] = true; flow('invite');
+      var ini = d.invite.split(':')[1], a = act(d.invite.split(':')[0]);
+      S.chats[ini] = S.chats[ini] || [];
+      S.chats[ini].push(['me', 'Hey! Want to go to ' + a.title + ' together?']);
+      S.chats[ini].push(['them', 'Yes! I was about to ping you!']);
+      addPoints(1, 'invitation sent to ' + NAMES[ini]);
+    });
+    else if (d.chat) go(function () { S.view = { type: 'chat', id: d.chat }; if (S.chats[d.chat] && S.chats[d.chat].length) flow('chat'); S.chats[d.chat] = S.chats[d.chat] || []; scr.scrollTop = 0; });
+    else if (d.join) go(function () {
+      if (S.joined[d.join]) return;
+      S.joined[d.join] = true; S.journey.push({ i: 'people', t: 'Joined a Student Space post', s: d.join === 'hack' ? 'IC Hack team' : 'Sunday dim sum' });
+      addPoints(1, 'joined a post');
+    });
+    else if (d.nfc !== undefined) {
+      go(function () { S.sheet = 'tapping'; flow('nfc'); });
+      setTimeout(function () { if (S.sheet === 'tapping') go(function () { S.sheet = 'profile'; }); }, 1700);
+    }
+    else if (d.addmia !== undefined) go(function () {
+      if (S.friends.indexOf('MC') > -1) return;
+      S.friends.push('MC'); S.chats.MC = [['them', 'Nice to meet you! Matcha this week?']];
+      addPoints(2, 'new friend: Mia Chen');
+    });
+    else if (d.close !== undefined) go(function () { S.sheet = null; });
+  });
+  document.getElementById('app').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var f = e.target, k = f.dataset.send, inp = f.querySelector('input'), v = inp.value.trim();
+    if (!v) return;
+    go(function () {
+      S.chats[k].push(['me', v]); flow('chat');
+      if (!S['msg' + k]) { S['msg' + k] = true; addPoints(1, 'kept in touch'); }
+    });
+    var again = document.getElementById('msg-in'); if (again) again.focus();
+    scr.scrollTop = scr.scrollHeight;
+  });
+  document.getElementById('reset').addEventListener('click', function () { S = fresh(); lastStage = 0; render(); });
+
+  render();
+  function report() { try { parent.postMessage({ imppetsDemoHeight: document.documentElement.scrollHeight }, '*'); } catch (e) {} }
+  report(); window.addEventListener('resize', report); new MutationObserver(report).observe(document.body, { subtree: true, childList: true });
+})();
+</script>
+</body>
+</html>

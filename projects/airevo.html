@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>airevo — Daisy Fang</title>
+  <meta name="description" content="airevo: a transformable platform sneaker that gives a visible 5 cm lift without trading away all-day comfort. Case study by Daisy Fang.">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Pinyon+Script&display=swap">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* airevo brand layer on top of the site style */
+    body.airevo { --accent: #8E4F55; --blush: #F1E1DC; --blush-2: #E9CFC9; --rose: #B9787A; --brand-serif: 'Cormorant Garamond', Georgia, serif; --script: 'Pinyon Script', 'Snell Roundhand', cursive; }
+    .script { font-family: var(--script); font-weight: 400; color: var(--accent); }
+    .band { background: var(--blush); }
+    .band .wrap { padding-block: clamp(56px, 8vw, 104px); }
+    .band-dark { background: #2B211F; color: #F7F1EC; }
+    .band-dark .muted, .band-dark .mono.muted { color: #CDBDB7; }
+
+    .hero-a .h1-logo { width: min(100%, 460px); margin-left: -10px; }
+    .hero-a .tagline { font-size: clamp(40px, 5vw, 68px); line-height: 1; margin: 0; }
+    .hero-a .hero-photo img { -webkit-mask-image: none; mask-image: none; filter: drop-shadow(0 40px 34px rgba(110,60,60,.22)); max-width: 620px; }
+    .hero-a .hero-photo { position: relative; }
+    .hero-a .hero-photo::before { content: ""; position: absolute; inset: 6% 8%; border-radius: 50%; background: radial-gradient(closest-side, var(--blush-2), rgba(233,207,201,0)); z-index: -1; }
+
+    .problems { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+    .problems li { border-top: 1px solid var(--ink); padding-top: 12px; font-size: 22px; line-height: 1.2; }
+    .problems li span { display: block; font-family: var(--mono); font-size: 11px; color: var(--accent); margin-bottom: 6px; }
+
+    .w5 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0; border-top: 1px solid var(--ink); }
+    .w5 div { padding: 16px 16px 16px 0; border-bottom: 1px solid var(--line); }
+    .w5 dt { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+    .w5 dd { margin: 6px 0 0; font-size: 17px; line-height: 1.45; }
+
+    .hmw { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 20px; }
+    .hmw li { background: var(--panel); padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+    .hmw b { font-weight: 400; font-size: 22px; line-height: 1.2; }
+    .hmw q { font-style: italic; color: var(--muted); font-size: 16px; }
+    .hmw small { font-family: var(--mono); font-size: 11px; color: var(--accent); }
+
+    .table-scroll { overflow-x: auto; }
+    .spec { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 16px; }
+    .spec th { text-align: left; font-family: var(--mono); font-weight: 500; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 10px 12px 10px 0; border-bottom: 1px solid var(--ink); }
+    .spec td { padding: 14px 12px 14px 0; border-bottom: 1px solid var(--line); vertical-align: top; line-height: 1.45; }
+    .spec td:first-child { font-family: var(--mono); font-size: 12.5px; color: var(--accent); white-space: nowrap; }
+    .spec td.tnum { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+    .story { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 10px; }
+    .story figure { flex: 0 0 min(320px, 78%); margin: 0; scroll-snap-align: start; }
+    .story img { width: 100%; height: auto; display: block; }
+
+    .protos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+    @media (max-width: 560px) { .protos { grid-template-columns: minmax(0, 1fr); } }
+    .protos figure { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+    .protos .frame { background: var(--panel); aspect-ratio: 4 / 3; display: flex; align-items: center; justify-content: center; padding: 18px; max-width: 100%; }
+    .protos img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .protos h3 { margin: 0; font-weight: 400; font-size: 21px; }
+    .protos p { margin: 0; font-size: 15.5px; color: var(--muted); }
+
+    .brand-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 28px; align-items: start; }
+    .brand-facts { display: flex; flex-direction: column; gap: 20px; }
+    .brand-facts dt { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+    .brand-facts dd { margin: 6px 0 0; font-family: var(--brand-serif); font-size: 26px; line-height: 1.2; }
+    .pack { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+    .pack img { width: 100%; height: auto; filter: drop-shadow(0 24px 24px rgba(110,60,60,.18)); }
+    .pack figcaption { font-family: var(--brand-serif); font-size: 19px; }
+    .pack figcaption small { display: block; font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .colours { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+    .colours img { width: 100%; height: auto; display: block; background: #fff; }
+    @media (max-width: 700px) { .colours { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+    .limited { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: center; }
+    .limited img { width: 100%; height: auto; filter: drop-shadow(0 24px 24px rgba(110,60,60,.18)); }
+    @media (max-width: 700px) { .limited { grid-template-columns: minmax(0, 1fr); } }
+  </style>
+</head>
+<body class="airevo">
+<div class="wrap">
+  <header class="topbar mono">
+    <a class="ul" href="../index.html#work">← Index</a>
+    <span class="muted">02 / 04 — airevo</span>
+    <nav aria-label="Main">
+      <a class="ul" href="../index.html#about">About</a>
+      <a class="ul accent" href="../index.html#contact">Contact ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ========== 标题：Logo + 产品图 ========== -->
+    <section class="case-hero split hero-a">
+      <div class="hero-text">
+        <p class="mono accent" style="margin:0">Case study 02 · Footwear · Product &amp; brand</p>
+        <h1>
+          <img class="h1-logo" src="../assets/img/airevo-logo.webp" alt="airevo — Comfortable Platform Shoes" width="1021" height="341">
+        </h1>
+        <p class="tagline script reveal"><span class="ln"><span style="--i:0">Elevate your every step.</span></span></p>
+        <p class="lede">A transformable platform sneaker that gives a visible 5 cm lift without trading away all-day comfort, stability or a light step.</p>
+      </div>
+      <figure class="hero-photo">
+        <img src="../assets/img/airevo-hero.webp" alt="airevo SwitchLift sneaker in cream patent leather and silk on a transparent air-cushion platform" width="657" height="529">
+      </figure>
+    </section>
+
+    <dl class="meta">
+      <div><dt>My role</dt><dd><strong>Solo project</strong>: research, product design, material selection, prototyping and brand</dd></div>
+      <div><dt>Context</dt><dd>Imperial College London · Design Engineering, 2025</dd></div>
+      <div><dt>Product</dt><dd>SwitchLift modular platform sneaker for young urban women, 20–35</dd></div>
+      <div><dt>Methods &amp; tools</dt><dd>Social listening, pressure mapping, morphological analysis · vacuum forming, knitting, 3D printing (TPU 95A), Procreate, AI image tools</dd></div>
+    </dl>
+
+    <!-- ========== 01 问题 ========== -->
+    <section class="stage-sec">
+      <div class="stage-label"><span class="step">01</span><h2>The problem</h2></div>
+      <div class="stage-body">
+        <p class="big" data-fade>I wear height-increasing shoes most days. They make me look taller, but the soles are heavy and stiff, and by the end of the day my feet ache and my posture feels wrong.</p>
+        <p data-fade>Most height-boosting footwear is designed for appearance first and comfort second. That raised the question behind airevo: how might we make height-increasing shoes that feel natural, light and ergonomic, instead of making people trade health for height?</p>
+        <ul class="problems" data-fade aria-label="Existing problems">
+          <li><span>01</span>Uncomfortable and hard to balance</li>
+          <li><span>02</span>Too heavy</li>
+          <li><span>03</span>Not breathable</li>
+          <li><span>04</span>Too thick and out of proportion</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ========== 02 调研 ========== -->
+    <section class="stage-sec">
+      <div class="stage-label"><span class="step">02</span><h2>Research</h2></div>
+      <div class="stage-body">
+        <p data-fade>Three sources: my own experience, social listening, and what people search for. A Google search for “platform shoes” immediately suggests “platform shoes uncomfortable” and “are platform shoes bad for your feet?”. In a Reddit thread on platform shoes, I coded each comment for complaints and wishes: most were about weight, stiff soles, instability and a chunky look, while people still asked for 2–3 inches of height with all-day comfort.</p>
+        <blockquote class="quote" data-fade>“I couldn’t bend my feet as much as in non-platform shoes, and they also feel heavy.”<cite>Online comment, social listening</cite></blockquote>
+        <dl class="w5" data-fade>
+          <div><dt>Who</dt><dd>Young urban women, 20–35, who care about comfort, aesthetics and shoes that adapt to different occasions.</dd></div>
+          <div><dt>What</dt><dd>A transforming shoe: hollow sole to cut weight, breathable upper, insole that balances pressure.</dd></div>
+          <div><dt>When</dt><dd>Long days where comfort and height must coexist, and moments that need a different sole height.</dd></div>
+          <div><dt>Where</dt><dd>Commuting, the workplace, dates and parties, light daily sport.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- ========== 03 定义 ========== -->
+    <section class="stage-sec">
+      <div class="stage-label"><span class="step">03</span><h2>Define</h2></div>
+      <div class="stage-body">
+        <ul class="hmw" data-fade>
+          <li><small>HMW 1</small><b>Design platform shoes that are more comfortable and easy to wear?</b><q>I couldn’t bend my feet as much as non-platform shoes.</q></li>
+          <li><small>HMW 2</small><b>Design a modular shoe system for different outfits and uses?</b><q>They’re always very heavy, not to mention how often you roll your ankle.</q></li>
+          <li><small>HMW 3</small><b>Explore more functions for shoes with a high sole?</b><q>Can we make use of the extra space in the sole?</q></li>
+        </ul>
+        <p data-fade><strong style="font-weight:500">Aim:</strong> a lightweight, transformable platform shoe system that lets young urban women switch between a stable height-boost mode and a low-profile daily mode, with better proportions, all-day comfort and less foot fatigue.</p>
+        <div class="table-scroll" data-fade>
+          <table class="spec">
+            <thead><tr><th scope="col">Requirement</th><th scope="col">Why</th><th scope="col">Specification</th></tr></thead>
+            <tbody>
+              <tr><td>All-day comfort</td><td>Feet get sore after a few hours in platform mode.</td><td>Zoned insole: soft heel and forefoot, firmer arch. Flex grooves under the forefoot.</td></tr>
+              <tr><td>Stability</td><td>Added height feels wobbly on stairs and uneven pavements.</td><td>Flared heel, anti-slip tread, rigid heel counter. A flat platform instead of a sloped one.</td></tr>
+              <tr><td>Transformation</td><td>If switching is slow or confusing, people stop using it.</td><td>Tool-free lock, ≤ 30 s per shoe, with a clear click when locked.</td></tr>
+              <tr><td>Lightweight</td><td>Heavy soles tire you on stairs and long walks.</td><td>EU 38: ≤ 350 g platform mode, ≤ 280 g flat mode. Hollow midsole.</td></tr>
+              <tr><td>Style</td><td>Bulky or unnatural shoes don’t get worn.</td><td>Minimal upper for office, casual and date outfits. Nude palette. 30–50 mm visible lift.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 04 发展 ========== -->
+    <section class="stage-sec">
+      <div class="stage-label"><span class="step">04</span><h2>Develop</h2></div>
+      <div class="stage-body">
+        <div class="funnel" data-fade>
+          <div><b>15</b><span>Concepts</span></div>
+          <div><b>3</b><span>Main ideas</span></div>
+          <div class="final"><b>1</b><span>SwitchLift</span></div>
+        </div>
+        <p data-fade>I explored 15 concepts across the three HMWs, then developed three: a pressure-distribution insole, a zipper two-layer upper, and a sole that absorbs energy mechanically. The final design combines a detachable transparent air-cushion platform with a zoned insole.</p>
+        <div class="duo" data-fade>
+          <figure class="fig">
+            <div class="frame" style="aspect-ratio:auto;padding:24px"><img src="../assets/img/airevo-pressure.webp" alt="Plantar pressure map with zones for toes, metatarsal heads, medial and lateral midfoot, and heel" loading="lazy" width="1100" height="940"></div>
+            <figcaption class="mono"><span>Pressure mapping</span><span class="muted">Where to cushion, flex and support</span></figcaption>
+          </figure>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <p style="margin:0">Pressure peaks under the heel and the first metatarsal heads, while the midfoot gets too little support. So the insole is split into zones, each with its own job: shock absorption at the heel, a firmer arch bridge, a metatarsal pad to spread push-off load, and soft, flexible toes.</p>
+            <p style="margin:0">A morphological analysis then settled the details. An adjustable elastic cord beat bow laces, Velcro and BOA for quick micro-adjustment as the height changes. A hollow transparent air-bag midsole beat a mortise-and-tenon rubber sole and a fully modular sole: it is visually light, cuts weight and still absorbs impact.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 05 原型 ========== -->
+    <section class="stage-sec">
+      <div class="stage-label"><span class="step">05</span><h2>Prototype</h2></div>
+      <div class="stage-body">
+        <div class="protos">
+          <figure data-fade style="--i:0"><div class="frame"><img src="../assets/img/airevo-proto-last.webp" alt="Vacuum-formed upper on a green shoe last" loading="lazy"></div><h3>Upper: vacuum forming</h3><p>Heat vacuum forming over a last to get the upper’s shape quickly and accurately.</p></figure>
+          <figure data-fade style="--i:1"><div class="frame"><img src="../assets/img/airevo-proto-knit.webp" alt="Knitting machine with yarn cones" loading="lazy"></div><h3>Upper: knitted fabrics</h3><p>A UAL textiles student taught me the knitting machine, so I could test knitted uppers.</p></figure>
+          <figure data-fade style="--i:2"><div class="frame"><img src="../assets/img/airevo-proto-insole.webp" alt="Foam insole prototypes" loading="lazy"></div><h3>Zoned insole in foam</h3><p>Hard foam shaped to the last, soft foam added by pressure zone, perforated where feet sweat.</p></figure>
+          <figure data-fade style="--i:3"><div class="frame"><img src="../assets/img/airevo-proto-print.webp" alt="3D-printed TPU sole made into a sandal" loading="lazy"></div><h3>Sole: 3D printed in TPU 95A</h3><p>Printed as a sandal so I could actually walk on it and test rebound. A honeycomb version was too rigid, so the second uses airbags and a spine-like segmented join.</p></figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 06 验证 ========== -->
+    <section class="stage-sec">
+      <div class="stage-label"><span class="step">06</span><h2>Validate</h2></div>
+      <div class="stage-body">
+        <p data-fade>To check the insole, I estimated how much body weight each zone carries for a 50 kg wearer and matched a material stack and hardness to each.</p>
+        <div class="table-scroll" data-fade>
+          <table class="spec">
+            <thead><tr><th scope="col">Zone</th><th scope="col">Load share</th><th scope="col">≈ Force</th><th scope="col">Material (top → bottom)</th><th scope="col">Hardness / thickness</th></tr></thead>
+            <tbody>
+              <tr><td>Z1 Heel core</td><td class="tnum">40%</td><td class="tnum">196 N</td><td>PU foam or soft EVA pad over the hollow airbag midsole</td><td>20–30 Shore A<br><span class="muted">5–6 mm</span></td></tr>
+              <tr><td>Z2 Medial arch</td><td class="tnum">6%</td><td class="tnum">29 N</td><td>Thin soft top cover, firm EVA / TPU arch shell</td><td>25–30 top, 45–55 core<br><span class="muted">2 mm top, 3–4 mm core</span></td></tr>
+              <tr><td>Z3 Lateral midfoot</td><td class="tnum">4%</td><td class="tnum">20 N</td><td>Soft top cover, medium EVA base</td><td>30–35 Shore A<br><span class="muted">3–4 mm</span></td></tr>
+              <tr><td>Z4 Medial forefoot</td><td class="tnum">25%</td><td class="tnum">123 N</td><td>Soft EVA or PU met pad, medium EVA carrier</td><td>20–25 pad, 30–35 carrier<br><span class="muted">3–4 mm each</span></td></tr>
+              <tr><td>Z5 Lateral forefoot</td><td class="tnum">15%</td><td class="tnum">74 N</td><td>Medium EVA for stability</td><td>30–40 Shore A<br><span class="muted">4–5 mm</span></td></tr>
+              <tr><td>Z6 Hallux &amp; toes</td><td class="tnum">10%</td><td class="tnum">49 N</td><td>Soft PU or low-density EVA, flex grooves</td><td>20–30 Shore A<br><span class="muted">2–3 mm</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ========== 故事板 ========== -->
+<section class="band" aria-labelledby="story-title">
+  <div class="wrap">
+    <div class="section-head" style="padding-top:0">
+      <h2 id="story-title" class="script" style="margin:0;font-size:clamp(40px,5vw,64px)">A day in airevo</h2>
+      <span class="mono muted">Storyboard · scroll →</span>
+    </div>
+    <div class="story" data-fade>
+      <figure><img src="../assets/img/airevo-story-1.webp" alt="She walks to the gym in platform sneakers: maybe I should start exercising again" loading="lazy"></figure>
+      <figure><img src="../assets/img/airevo-story-2.webp" alt="She worries: what if I trip or twist my ankle on the treadmill?" loading="lazy"></figure>
+      <figure><img src="../assets/img/airevo-story-3.webp" alt="She realises: wait, these shoes are transformable" loading="lazy"></figure>
+      <figure><img src="../assets/img/airevo-story-4.webp" alt="She removes the outer sole layer and the shoe becomes a low-profile sneaker" loading="lazy"></figure>
+      <figure><img src="../assets/img/airevo-story-5.webp" alt="Light, safe and easy to move in: one pair for height, comfort and fitness" loading="lazy"></figure>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <!-- ========== 产品交互 ========== -->
+  <section class="try-app" aria-labelledby="product-title">
+    <div class="anatomy-head">
+      <span class="mono accent">The product</span>
+      <h3 id="product-title">SwitchLift: take it apart, switch heights</h3>
+      <a class="ul mono" href="airevo-product.html" target="_blank" rel="noopener">Open full screen ↗</a>
+    </div>
+    <iframe id="product-frame" src="airevo-product.html" title="Interactive airevo sneaker: open the exploded view to see each material, and switch between flat and height-boost mode" loading="lazy" style="height:760px"></iframe>
+  </section>
+</div>
+
+<!-- ========== 品牌 ========== -->
+<section class="band" aria-labelledby="brand-title">
+  <div class="wrap">
+    <div class="section-head" style="padding-top:0">
+      <h2 id="brand-title" class="mono" style="margin:0">The brand</h2>
+      <span class="script" style="font-size:clamp(30px,3.6vw,46px)">Elevate your every step.</span>
+    </div>
+    <div class="brand-grid" style="margin-top:28px">
+      <dl class="brand-facts" data-fade>
+        <div><dt>Brand tone</dt><dd>Elegant, feminine, slightly romantic. A daily essential that also works as a gift.</dd></div>
+        <div><dt>Positioning</dt><dd>A mid-to-high priced modular platform sneaker for style-conscious urban women.</dd></div>
+        <div><dt>Promise</dt><dd>One shoe, two heights: a visible lift with flat-shoe confidence.</dd></div>
+      </dl>
+      <figure class="pack" data-fade style="--i:1"><img src="../assets/img/airevo-box.webp" alt="airevo gift box with a pair of sneakers and a pink satin bag" loading="lazy"><figcaption>Shoe box gift set<small>The whole set in one box</small></figcaption></figure>
+      <figure class="pack" data-fade style="--i:2"><img src="../assets/img/airevo-bag.webp" alt="Pink satin drawstring bag printed with the airevo logo" loading="lazy"><figcaption>Accessories bag<small>Bow in a matching colour, free shoe cleaner included</small></figcaption></figure>
+    </div>
+
+    <div class="limited" style="margin-top:clamp(48px,7vw,88px)">
+      <div data-fade>
+        <p class="mono accent" style="margin:0 0 10px">Lace limited edition</p>
+        <p class="script" style="font-size:clamp(36px,4.4vw,56px);margin:0;line-height:1.05">For winter season</p>
+        <p style="margin:14px 0 0;max-width:46ch">Lace uppers with satin bow laces, on the same transparent platform. A seasonal edition keeps the brand feeling special and gift-worthy.</p>
+      </div>
+      <img data-fade src="../assets/img/airevo-lace-2.webp" alt="Lace limited-edition airevo sneaker with satin bow laces" loading="lazy">
+    </div>
+
+    <div style="margin-top:clamp(48px,7vw,88px);display:flex;flex-direction:column;gap:14px" data-fade>
+      <div class="section-head" style="padding:0">
+        <span class="mono accent">Colour &amp; material exploration</span>
+        <span class="mono muted">Generated with AI image tools to explore looks</span>
+      </div>
+      <div class="colours">
+        <img src="../assets/img/airevo-colour-1.webp" alt="Colourway: dusty pink with silk laces" loading="lazy">
+        <img src="../assets/img/airevo-colour-2.webp" alt="Colourway: champagne with elastic strap" loading="lazy">
+        <img src="../assets/img/airevo-colour-3.webp" alt="Colourway: silver with strap closure" loading="lazy">
+        <img src="../assets/img/airevo-colour-4.webp" alt="Colourway: peach" loading="lazy">
+        <img src="../assets/img/airevo-colour-5.webp" alt="Colourway: rose velvet with wide strap" loading="lazy">
+        <img src="../assets/img/airevo-colour-6.webp" alt="Colourway: burgundy velvet with bow laces" loading="lazy">
+        <img src="../assets/img/airevo-colour-7.webp" alt="Colourway: sage velvet" loading="lazy">
+        <img src="../assets/img/airevo-colour-8.webp" alt="Colourway: emerald velvet" loading="lazy">
+        <img src="../assets/img/airevo-colour-9.webp" alt="Colourway: cream with adjustable elastic cord" loading="lazy">
+        <img src="../assets/img/airevo-colour-10.webp" alt="Colourway: navy with silk laces" loading="lazy">
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <a class="doc-link" href="../assets/docs/airevo_Portfolio.pdf" target="_blank" rel="noopener" data-fade>
+    <span class="mono accent">Explore more details</span>
+    <span class="doc-title">airevo design portfolio</span>
+    <span class="mono muted">Research, concepts, prototyping, validation · 24 pages · PDF</span>
+    <i aria-hidden="true">↗</i>
+  </a>
+
+  <nav class="next" aria-label="More work">
+    <a class="btn" href="imppets.html">← ImpPets</a>
+    <a class="big-link" href="../index.html#work">All projects <i>→</i></a>
+  </nav>
+</div>
+
+<script src="../js/main.js"></script>
+<script>
+  window.addEventListener('message', function (e) {
+    if (e.data && e.data.airevoHeight) document.getElementById('product-frame').style.height = e.data.airevoHeight + 'px';
+  });
+</script>
+</body>
+</html>

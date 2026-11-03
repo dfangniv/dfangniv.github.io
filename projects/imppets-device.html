@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ImpPet device lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { background: var(--bg); }
+    .bar { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; padding-block: 4px 16px; }
+    .bar .hint { flex: 1 1 300px; margin: 0; font-style: italic; color: var(--muted); font-size: 17px; }
+    .bar .btn { min-height: 40px; }
+
+    .lab { position: relative; display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 24px; min-height: 640px; background: var(--panel); border-radius: 4px; overflow: hidden; }
+    @media (max-width: 760px) { .lab { grid-template-columns: minmax(0, 1fr); min-height: 0; } }
+
+    /* ---------- device stage ---------- */
+    .stage { position: relative; min-height: 600px; display: grid; place-items: center; }
+    @media (max-width: 760px) { .stage { min-height: 460px; } }
+    .dev { position: relative; width: 250px; height: 318px; z-index: 6; cursor: grab; touch-action: none; transition: transform .55s cubic-bezier(.16,1,.3,1); }
+    .dev.dragging { transition: none; cursor: grabbing; }
+    .scene { width: 100%; height: 100%; perspective: 1100px; }
+    .model { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .9s cubic-bezier(.16,1,.3,1); }
+    .model.live { transition: none; }
+    .layer { position: absolute; inset: 0; transform-style: preserve-3d; transform: translateZ(var(--z)); transition: transform .9s cubic-bezier(.16,1,.3,1), opacity .5s; }
+    .layer svg, .layer .face { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .face { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+    .face.back { transform: rotateY(180deg); }
+    .photo { position: absolute; left: 50%; top: 50%; height: 104%; aspect-ratio: 630 / 800; transform: translate(-50%, -50%) translateZ(9px); transition: opacity .45s; pointer-events: none; }
+    .photo img { width: 100%; height: 100%; display: block; filter: drop-shadow(0 26px 30px rgba(60,50,120,.22)); }
+    .photo canvas { position: absolute; left: 30.6%; top: 36.1%; width: 38.9%; height: 28.3%; image-rendering: pixelated; }
+    .exploded .photo { opacity: 0; }
+    .oled { position: absolute; left: 50%; top: 52%; width: 122px; height: 112px; transform: translate(-50%, -50%); background: linear-gradient(145deg,#E4E6E8,#AEB2B6); border-radius: 6px; padding: 9px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.15); }
+    .oled canvas { width: 100%; height: 100%; border-radius: 2px; display: block; image-rendering: pixelated; }
+    .anchor { position: absolute; left: 6%; top: 52%; width: 1px; height: 1px; }
+    .dev.shake .scene { animation: shake .45s linear; }
+    @keyframes shake { 0%,100% { transform: translate(0,0) rotate(0); } 15% { transform: translate(-5px,1px) rotate(-2deg); } 30% { transform: translate(5px,-1px) rotate(2deg); } 45% { transform: translate(-4px,0) rotate(-1.5deg); } 60% { transform: translate(4px,1px) rotate(1.5deg); } 75% { transform: translate(-2px,0) rotate(-.5deg); } }
+
+    /* labels in exploded view */
+    .labels { position: absolute; inset: 0; pointer-events: none; z-index: 5; opacity: 0; transition: opacity .4s; }
+    .exploded-on .labels { opacity: 1; transition-delay: .5s; }
+    .labels svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+    .lbl { position: absolute; left: 20px; width: 168px; transform: translateY(-50%); }
+    .lbl b { display: block; font-family: var(--mono); font-weight: 500; font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: #1A2855; }
+    .lbl i { display: block; font-size: 13.5px; line-height: 1.3; color: #3B3F52; }
+    .lbl .num { display: none; }
+    @media (max-width: 760px) {
+      .lbl { display: none; }
+      .labels svg { display: none; }
+      .dot-num { position: absolute; width: 20px; height: 20px; border-radius: 50%; background: #1A2855; color: #fff; font: 500 11px/20px var(--mono); text-align: center; transform: translate(-50%, -50%); }
+    }
+    @media (min-width: 761px) { .dot-num { display: none; } }
+    .legend { display: none; list-style: none; margin: 0; padding: 0 16px 16px; gap: 6px 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); font-size: 14px; }
+    .legend b { font-family: var(--mono); font-weight: 500; font-size: 11px; color: #1A2855; margin-right: 6px; }
+    @media (max-width: 760px) { .exploded-on .legend { display: grid; } }
+
+    .home-ring { position: absolute; width: 260px; height: 40px; border-radius: 50%; background: radial-gradient(closest-side, rgba(60,50,120,.16), transparent); bottom: 12%; left: 50%; transform: translateX(-50%); pointer-events: none; }
+
+    /* ---------- phone ---------- */
+    .phone-side { position: relative; display: grid; place-items: center; padding: 24px 16px; }
+    .phone2 { position: relative; width: 250px; aspect-ratio: 250 / 520; background: #16161B; border-radius: 40px; padding: 9px; box-shadow: 0 30px 60px -25px rgba(40,30,90,.5); }
+    .phone2::before { content: ""; position: absolute; top: 17px; left: 50%; transform: translateX(-50%); width: 76px; height: 22px; background: #16161B; border-radius: 14px; z-index: 4; }
+    .pscr { position: relative; width: 100%; height: 100%; border-radius: 32px; overflow: hidden; background: #F5F3FC; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, "Segoe UI", sans-serif; color: #1E2235; }
+    .pscr .st { display: flex; justify-content: space-between; padding: 12px 22px 0; font-size: 11px; font-weight: 600; }
+    .pscr .inner { padding: 26px 16px; }
+    .pscr h4 { margin: 0; font-size: 20px; font-weight: 700; }
+    .pscr .sub { font-size: 11.5px; color: #6F7489; margin: 2px 0 14px; }
+    .nfc-zone { position: relative; height: 150px; border-radius: 20px; background: #1A2855; color: #fff; display: grid; place-items: center; text-align: center; padding: 14px; overflow: hidden; }
+    .nfc-zone p { margin: 0; font-size: 12.5px; color: #CFD2EF; position: relative; z-index: 2; }
+    .nfc-zone strong { display: block; font-size: 15px; color: #fff; margin-bottom: 4px; }
+    .waves { position: absolute; inset: 0; display: grid; place-items: center; }
+    .waves i { position: absolute; width: 60px; height: 60px; border-radius: 50%; border: 2px solid rgba(162,160,219,.0); }
+    .near .waves i { animation: wave 1.2s ease-out infinite; border-color: rgba(162,160,219,.7); }
+    .near .waves i:nth-child(2) { animation-delay: .4s; }
+    .near .waves i:nth-child(3) { animation-delay: .8s; }
+    .hot .waves i { animation-duration: .6s; border-color: #F5BC44; }
+    @keyframes wave { from { transform: scale(.4); opacity: 1; } to { transform: scale(3); opacity: 0; } }
+    .friends-list { margin-top: 14px; background: #fff; border-radius: 16px; padding: 4px 12px; }
+    .fr { display: flex; gap: 10px; align-items: center; padding: 9px 0; font-size: 12.5px; font-weight: 600; }
+    .fr + .fr { border-top: 1px solid #E6E3F3; }
+    .fr .av { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 10px; font-weight: 700; flex: none; }
+    .fr small { display: block; font-weight: 400; color: #6F7489; font-size: 11px; }
+    .fr.new { animation: pop .5s cubic-bezier(.34,1.56,.64,1); }
+    @keyframes pop { from { transform: scale(.8); opacity: 0; } to { transform: none; opacity: 1; } }
+
+    .notif { position: absolute; left: 8px; right: 8px; top: 8px; z-index: 6; background: rgba(255,255,255,.96); border-radius: 18px; padding: 10px 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,.35); display: flex; gap: 10px; align-items: center; transform: translateY(-140%); transition: transform .5s cubic-bezier(.16,1,.3,1); }
+    .notif.on { transform: none; }
+    .notif img { width: 34px; height: 34px; border-radius: 9px; object-fit: cover; background: #ECEAFB; }
+    .notif b { display: block; font-size: 12px; }
+    .notif span { font-size: 11.5px; color: #3B3F52; }
+    .card-pop { position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 5; background: #1A2855; color: #fff; border-radius: 22px; padding: 14px; transform: translateY(115%); transition: transform .55s cubic-bezier(.16,1,.3,1); }
+    .card-pop.on { transform: none; }
+    .card-pop .k { font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: #B9BCE6; font-weight: 600; }
+    .card-pop .top { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
+    .card-pop .mc { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; font-weight: 700; font-size: 15px; }
+    .card-pop .nm { font-size: 15px; font-weight: 700; }
+    .card-pop .hd { font-size: 11px; color: #CFD2EF; }
+    .card-pop p { margin: 10px 0 0; font-size: 11.5px; line-height: 1.4; color: #E5E6F7; }
+    .card-pop .pts { margin-top: 10px; display: inline-block; background: #F5BC44; color: #1A2855; font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 999px; }
+    .flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 7; border-radius: 32px; }
+    .flash.on { animation: flash .5s ease-out; }
+    @keyframes flash { 0% { opacity: .8; } 100% { opacity: 0; } }
+
+    .counter { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+    .counter b { color: var(--accent); font-weight: 500; }
+    @media (prefers-reduced-motion: reduce) { .near .waves i { animation: none; } .dev.shake .scene { animation: none; } }
+  </style>
+</head>
+<body>
+  <div class="bar">
+    <p class="hint" id="hint">Drag the ImpPet onto the phone to make a friend. Double-click it to see inside.</p>
+    <button class="btn" type="button" id="b-explode">Explode view</button>
+    <button class="btn" type="button" id="b-tap">Tap to phone</button>
+    <span class="counter">Friends made: <b id="cnt">0</b></span>
+  </div>
+
+  <div class="lab" id="lab">
+    <div class="stage" id="stage">
+      <div class="home-ring" aria-hidden="true"></div>
+      <div class="labels" id="labels" aria-hidden="true"><svg id="lines"></svg></div>
+
+      <div class="dev" id="dev" tabindex="0" role="button" aria-label="ImpPet device. Drag onto the phone, or double-click to explode. Press Enter to explode, T to tap the phone.">
+        <div class="scene">
+          <div class="model" id="model">
+            <!-- Rear shell: inner face + outer face with clip -->
+            <div class="layer" style="--z:-14px" data-part="5">
+              <svg class="face" viewBox="0 0 250 318" aria-hidden="true">
+                <defs><radialGradient id="rg" cx="40%" cy="35%" r="75%"><stop offset="0" stop-color="#9C7BE6"/><stop offset="1" stop-color="#5E37B3"/></radialGradient></defs>
+                <path d="M125 22C196 22 238 128 238 196C238 264 188 308 125 308C62 308 12 264 12 196C12 128 54 22 125 22Z" fill="url(#rg)"/>
+                <path d="M125 36C186 36 224 132 224 196C224 254 180 294 125 294C70 294 26 254 26 196C26 132 64 36 125 36Z" fill="#6A44C2"/>
+                <circle cx="88" cy="246" r="22" fill="#55319F"/><circle cx="88" cy="246" r="16" fill="#C9CCD2"/>
+                <rect x="140" y="236" width="56" height="30" rx="5" fill="#55319F"/>
+                <circle cx="125" cy="14" r="12" fill="none" stroke="#7B52D1" stroke-width="7"/>
+              </svg>
+              <svg class="face back" viewBox="0 0 250 318" aria-hidden="true">
+                <path d="M125 22C196 22 238 128 238 196C238 264 188 308 125 308C62 308 12 264 12 196C12 128 54 22 125 22Z" fill="url(#rg)"/>
+                <g fill="none" stroke="#B9A4F0" stroke-width="5" stroke-linecap="round" opacity=".7"><path d="M108 120a26 26 0 0 1 0 40"/><path d="M96 108a42 42 0 0 1 0 64"/><path d="M84 96a58 58 0 0 1 0 88"/></g>
+                <rect x="96" y="190" width="58" height="80" rx="8" fill="#C9CCD2"/><rect x="104" y="198" width="42" height="64" rx="5" fill="#A7ABB3"/>
+                <circle cx="125" cy="14" r="12" fill="none" stroke="#7B52D1" stroke-width="7"/>
+              </svg>
+              <span class="anchor" data-a="5"></span>
+            </div>
+            <!-- NFC coil + battery -->
+            <div class="layer" style="--z:-10px" data-part="4">
+              <svg viewBox="0 0 250 318" aria-hidden="true">
+                <path d="M125 70C180 70 210 140 210 196C210 246 172 276 125 276C78 276 40 246 40 196C40 140 70 70 125 70Z" fill="#D9A54A" opacity=".9"/>
+                <g fill="none" stroke="#B5622B" stroke-width="3"><rect x="62" y="130" width="126" height="118" rx="40"/><rect x="72" y="140" width="106" height="98" rx="34"/><rect x="82" y="150" width="86" height="78" rx="28"/><rect x="92" y="160" width="66" height="58" rx="22"/></g>
+                <circle cx="182" cy="122" r="18" fill="#D7DADF" stroke="#9EA3AB" stroke-width="2"/>
+              </svg>
+              <span class="anchor" data-a="4"></span>
+            </div>
+            <!-- PCB + NFC controller -->
+            <div class="layer" style="--z:-6px" data-part="3">
+              <svg viewBox="0 0 250 318" aria-hidden="true">
+                <path d="M125 56C186 56 220 136 220 196C220 252 178 286 125 286C72 286 30 252 30 196C30 136 64 56 125 56Z" fill="#2E7A4E"/>
+                <g stroke="#8FD1A6" stroke-width="1.2" opacity=".55" fill="none"><path d="M50 200h50v-30h40M60 230h70l20-20h40M90 110v40h60M150 250v-30h30"/></g>
+                <rect x="104" y="150" width="44" height="40" rx="3" fill="#1F2124"/><rect x="64" y="186" width="30" height="24" rx="2" fill="#1F2124"/><rect x="156" y="200" width="26" height="22" rx="2" fill="#1F2124"/><rect x="118" y="214" width="22" height="16" rx="2" fill="#1F2124"/>
+                <circle cx="168" cy="250" r="14" fill="#D7DADF" stroke="#9EA3AB" stroke-width="2"/><circle cx="132" cy="258" r="12" fill="#C9A44A"/>
+              </svg>
+              <span class="anchor" data-a="3"></span>
+            </div>
+            <!-- OLED display -->
+            <div class="layer" style="--z:-2px" data-part="2">
+              <div class="oled"><canvas class="lcd" width="264" height="240"></canvas></div>
+              <span class="anchor" data-a="2"></span>
+            </div>
+            <!-- Screen lens -->
+            <div class="layer" style="--z:2px" data-part="1">
+              <svg viewBox="0 0 250 318" aria-hidden="true"><rect x="62" y="104" width="126" height="118" rx="10" fill="rgba(255,255,255,.35)" stroke="rgba(255,255,255,.9)" stroke-width="2"/><path d="M76 116l40 0-30 40z" fill="rgba(255,255,255,.35)"/></svg>
+              <span class="anchor" data-a="1"></span>
+            </div>
+            <!-- Front shell: translucent, textured -->
+            <div class="layer" style="--z:6px" data-part="0">
+              <svg viewBox="0 0 250 318" aria-hidden="true">
+                <defs><pattern id="gl" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="2" cy="3" r=".8" fill="#fff" opacity=".55"/><circle cx="6.5" cy="7" r=".5" fill="#E9E2FF" opacity=".6"/></pattern></defs>
+                <path fill-rule="evenodd" d="M125 22C196 22 238 128 238 196C238 264 188 308 125 308C62 308 12 264 12 196C12 128 54 22 125 22ZM70 112L92 98L108 112L125 92L142 112L158 98L180 112L190 136L182 168L190 200L180 224L158 232L142 222L125 236L108 222L92 232L70 224L60 200L68 168L60 136Z" fill="rgba(176,164,240,.62)" stroke="rgba(255,255,255,.75)" stroke-width="2"/>
+                <path fill-rule="evenodd" d="M125 22C196 22 238 128 238 196C238 264 188 308 125 308C62 308 12 264 12 196C12 128 54 22 125 22ZM70 112L92 98L108 112L125 92L142 112L158 98L180 112L190 136L182 168L190 200L180 224L158 232L142 222L125 236L108 222L92 232L70 224L60 200L68 168L60 136Z" fill="url(#gl)"/>
+                <rect x="112" y="252" width="26" height="34" rx="6" fill="#fff"/>
+                <circle cx="125" cy="14" r="12" fill="none" stroke="rgba(176,164,240,.9)" stroke-width="7"/>
+              </svg>
+              <span class="anchor" data-a="0"></span>
+            </div>
+            <!-- Photo-real front view (assembled) -->
+            <div class="photo"><img src="../assets/img/imppets-cut-egg.webp" alt="" draggable="false"><canvas class="lcd" width="264" height="240"></canvas></div>
+          </div>
+        </div>
+      </div>
+      <div id="dots"></div>
+    </div>
+
+    <div class="phone-side">
+      <div class="phone2" id="phone">
+        <div class="pscr">
+          <div class="st"><span>9:41</span><span>●●● ▮</span></div>
+          <div class="inner">
+            <h4>Friends</h4>
+            <p class="sub">Your Imperial circle</p>
+            <div class="nfc-zone" id="zone">
+              <div class="waves" aria-hidden="true"><i></i><i></i><i></i></div>
+              <p><strong>Tap your ImpPet here</strong>Hold it near the top of the phone to exchange profiles</p>
+            </div>
+            <div class="friends-list" id="flist">
+              <div class="fr"><span class="av" style="background:#E39A7A">AC</span><span>Amelia C.<small>Met at Freshers’ Fair</small></span></div>
+              <div class="fr"><span class="av" style="background:#7FB59A">JP</span><span>Jordan P.<small>Same hall</small></span></div>
+            </div>
+          </div>
+          <div class="notif" id="notif" role="status"><img src="../assets/img/imppets-mochi.webp" alt=""><div><b>ImpPets · now</b><span id="notif-t">You and Mia Chen are now friends!</span></div></div>
+          <div class="card-pop" id="cardpop">
+            <span class="k">NFC profile received</span>
+            <div class="top"><div class="mc" id="cp-ini" style="background:#8C87D6">MC</div><div><div class="nm" id="cp-nm">Mia Chen</div><div class="hd" id="cp-hd">Mathematics · Entry 2025</div></div></div>
+            <p id="cp-bio">New to London, into film photography, slow mornings, and figuring out where the best matcha is.</p>
+            <span class="pts" id="cp-pts">+2 social points · your egg has hatched!</span>
+          </div>
+          <div class="flash" id="flash"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ol class="legend" id="legend"></ol>
+
+<script>
+(function () {
+  var PARTS = [
+    ['Front shell', 'Translucent, textured, with different designs and colours to choose from.'],
+    ['Screen lens', ''],
+    ['OLED display screen', ''],
+    ['NFC controller', ''],
+    ['NFC coil', '+ battery'],
+    ['Rear shell', 'Opaque, flat.']
+  ];
+  var FRIENDS = [
+    { ini: 'MC', col: '#8C87D6', nm: 'Mia Chen', hd: 'Mathematics · Entry 2025', bio: 'New to London, into film photography, slow mornings, and figuring out where the best matcha is.' },
+    { ini: 'KT', col: '#8C9AD6', nm: 'Kenji T.', hd: 'Design Engineering · Entry 2025', bio: 'Climbs on Saturdays, builds keyboards on Sundays. Always up for a coffee tasting.' },
+    { ini: 'SR', col: '#E7A9C0', nm: 'Sofia R.', hd: 'Biochemistry · Entry 2025', bio: 'Looking for people to explore London’s food markets with.' }
+  ];
+  var IMG = '../assets/img/';
+  // ---------- pixel pet on the LCD (egg → hatched → grown up) ----------
+  var SPR = {"egg": ["000000000000011111000000000000", "000000000022123333102000000000", "000000000211233333211200000000", "000000002133333333302100000000", "000000001333333333333010000000", "000000013333333333333331000000", "000003133333333333333333100000", "000003133223333333333333130000", "000001332222333333333333010000", "000001322222233333333333310000", "000010022222223333333333301000", "000013222222223333333333331000", "000213222222223333333333331100", "003133222222223333333333333100", "000133222222233333333333333100", "000133322222233333333333333100", "300133332222333333333333333130", "031333330223333333332222333013", "031333333333333333322222233313", "031333333333333333322222233310", "031333333333333333222222223310", "031333333333333333222222223313", "031333333333333333222222223310", "031333333333333333222222223313", "031333333333333333220020003310", "000133333333333333300000033100", "000133333333333333300000033100", "000133333003333333330000333100", "000133330000333333333333333100", "000013302222233333333333331000", "000013302222223333333333331000", "000001332222223333333333310000", "000000132222233333333333100000", "000000310333333333333301300000", "000000001203333333330210000000", "000000000111000200011100000000", "000000000000111111100000000000", "000000000002222022200000000000"], "hatch": ["000000000000111111100000000000", "000000000011033333311000000000", "000000000111113333322130000000", "000000001331113333322210000000", "000000013331133333332231300000", "000000103333333233333030100000", "000002133333333033333333120000", "000001333331333333223333010000", "000001000110103332112120310000", "000001111103313331001111110000", "000000133033331310333001100000", "000000133333333133333332100000", "000001033332333333313333210000", "000001033321333333312333210000", "000001333311333333311333210000", "000001033333331133333333210000", "000001033333322223333333013000", "000000133333311112333332130000", "000001113333331103333311110000", "000011111333333333333311111300", "000111133333333333333333111100", "031112333333333333333333311110", "011112333312333333313333311111", "010012333131033333131033311101", "013321331333103331333103111301", "012330013333312313333311113321", "311133133333331133333332133021", "011233333333333333333333333021", "012213333333333331113333333221", "012223331113333311111333330211", "001333311111333311111333332210", "001333311111333311111333311110", "002133311111333331110333111100", "000133331113333331113332121100", "000013333333333333333332111000", "000021333333333333333331210000", "000000100333333333333002100000", "000000011002000000020011000000", "000000002112200000011100000000"], "chick": ["0000000000000030000000000000", "0000000000010011000000000000", "0000000000011131110000000000", "0000000000010132100000000000", "0000000000112331110000000000", "0000000111203333021110000000", "0000301033333333333301000000", "0000313333333333333333100000", "0000103333333333333333010000", "0003133303333333333333310000", "0031333003333333333333321000", "0001300000300333333333331000", "0010333030333333333333330100", "0013333012333333330103330100", "0013333111333033331113333100", "0013303211333333331113330100", "0013300211333203332123330100", "0013333303331111333033330100", "0012333333311121133333330100", "0031333333331111333333301000", "0003133333333003333333010000", "0003110333333333333330110000", "0031221233333333333321111000", "0013330333333333333333330100", "0103323333333333333333233210", "2133003333333333333333033010", "1333123333333333333333213321", "1332133333333333333333310321", "1001333333333333333333321221", "0111333333333333333333321110", "0031133333333333333333311000", "0000103333333333333333210000", "0000312333333333333302130000", "0000001222333000002211000000", "0000000111200000221110000000", "0000000012111111110020000000", "0000001112122222012011000000", "0000011221113000112011100000", "0000001111100000211111200000", "0000002000220000000002020000"]};
+  var COLS = 44, ROWS = 40;
+  var INK = { 1: '#151615', 2: '#7E837C', 3: '#EEF0EA' };
+  var lcds = [].slice.call(document.querySelectorAll('canvas.lcd'));
+  var petStage = 0, frame = 0, wobbleAt = 0;
+  function blank() { var g = []; for (var y = 0; y < ROWS; y++) { g.push(new Array(COLS).fill(0)); } return g; }
+  function stamp(g, rows, ox, oy, mirror) {
+    rows.forEach(function (r, y) { for (var x = 0; x < r.length; x++) { var v = +r[mirror ? r.length - 1 - x : x]; var gx = ox + x, gy = oy + y; if (v && gy >= 0 && gy < ROWS && gx >= 0 && gx < COLS) g[gy][gx] = v; } });
+  }
+  function stampRot(g, rows, ox, oy, deg) {
+    var h = rows.length, w = rows[0].length, a = deg * Math.PI / 180, cx = w / 2, cy = h; // pivot: bottom centre
+    for (var y = -4; y < h + 2; y++) for (var x = -6; x < w + 6; x++) {
+      var dx = x + .5 - cx, dy = y + .5 - cy;
+      var sx = Math.round(cx + dx * Math.cos(a) + dy * Math.sin(a) - .5), sy = Math.round(cy - dx * Math.sin(a) + dy * Math.cos(a) - .5);
+      if (sy >= 0 && sy < h && sx >= 0 && sx < w) { var v = +rows[sy][sx]; var gx = ox + x, gy = oy + y; if (v && gy >= 0 && gy < ROWS && gx >= 0 && gx < COLS) g[gy][gx] = v; }
+    }
+  }
+  function compose(t) {
+    var g = blank(), sp, ox, oy;
+    if (petStage <= 1) {
+      sp = SPR.egg; ox = Math.round((COLS - sp[0].length) / 2); oy = ROWS - sp.length - 1;
+      var deg = 0;
+      if (petStage === 1) { var k = (t - wobbleAt) % 1800; if (k < 700) deg = Math.sin(k / 700 * Math.PI * 4) * 9 * (1 - k / 700); }
+      stampRot(g, sp, ox, oy, deg);
+    } else if (petStage <= 3) {
+      sp = SPR.hatch; ox = Math.round((COLS - sp[0].length) / 2); oy = ROWS - sp.length - 1;
+      stamp(g, sp, ox, oy);
+    } else {
+      sp = SPR.chick; ox = Math.round((COLS - sp[0].length) / 2);
+      var hop = Math.floor(t / 450) % 4 === 1 ? 1 : 0;
+      oy = ROWS - sp.length - 1 - hop;
+      stamp(g, sp, ox, oy);
+    }
+    return g;
+  }
+  function draw(t) {
+    var g = compose(t || 0);
+    lcds.forEach(function (c) {
+      var ctx = c.getContext('2d'), cw = c.width / COLS, ch = c.height / ROWS;
+      ctx.fillStyle = '#C3C9BE'; ctx.fillRect(0, 0, c.width, c.height);
+      for (var y = 0; y < ROWS; y++) for (var x = 0; x < COLS; x++) {
+        var v = g[y][x];
+        ctx.fillStyle = v ? INK[v] : '#BCC2B7';
+        ctx.fillRect(x * cw + .6, y * ch + .6, cw - 1.2, ch - 1.2);
+      }
+    });
+  }
+  function loop(t) { draw(t); requestAnimationFrame(loop); }
+  function setPet(n) { petStage = n; wobbleAt = performance.now(); }
+  requestAnimationFrame(loop);
+
+  var EXPLODE_Z = [150, 92, 34, -24, -86, -150];
+  var ASSEMBLED_Z = [6, 2, -2, -6, -10, -14];
+
+  var dev = document.getElementById('dev'), model = document.getElementById('model'), lab = document.getElementById('lab'),
+      stage = document.getElementById('stage'), zone = document.getElementById('zone'), phone = document.getElementById('phone'),
+      labels = document.getElementById('labels'), lines = document.getElementById('lines'), dots = document.getElementById('dots'),
+      hint = document.getElementById('hint'), bExplode = document.getElementById('b-explode');
+  var layers = [].slice.call(model.querySelectorAll('.layer'));
+  var exploded = false, rx = 0, ry = 0, rz = 0, dx = 0, dy = 0, made = 0, busy = false;
+
+  // build labels
+  PARTS.forEach(function (p, i) {
+    var d = document.createElement('div'); d.className = 'lbl'; d.dataset.i = i;
+    d.innerHTML = '<b>' + p[0] + '</b>' + (p[1] ? '<i>' + p[1] + '</i>' : '');
+    labels.appendChild(d);
+    var n = document.createElement('span'); n.className = 'dot-num'; n.textContent = i + 1; n.dataset.i = i; dots.appendChild(n);
+    var li = document.createElement('li'); li.innerHTML = '<b>' + (i + 1) + '</b>' + p[0] + (p[1] ? ' <i class="muted">' + p[1] + '</i>' : ''); document.getElementById('legend').appendChild(li);
+  });
+  dots.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:7';
+
+  function applyModel() {
+    model.style.transform = 'rotateX(' + rx + 'deg) rotateY(' + ry + 'deg) rotateZ(' + rz + 'deg)';
+  }
+  function setExploded(on) {
+    exploded = on;
+    lab.classList.toggle('exploded-on', on);
+    model.classList.toggle('exploded', on);
+    layers.forEach(function (l) { var i = +l.dataset.part; l.style.setProperty('--z', (on ? EXPLODE_Z[i] : ASSEMBLED_Z[i]) + 'px'); });
+    if (on) { rx = 58; ry = 0; rz = -22; } else { rx = 0; ry = 0; rz = 0; }
+    applyModel();
+    bExplode.textContent = on ? 'Assemble' : 'Explode view';
+    hint.textContent = on ? 'Drag to rotate the parts. Double-click to put it back together.' : 'Drag the ImpPet onto the phone to make a friend. Double-click it to see inside.';
+    trackLabels(1100);
+  }
+
+  // keep labels attached to the parts while things move
+  var trackUntil = 0;
+  function trackLabels(ms) { trackUntil = Math.max(trackUntil, performance.now() + ms); requestAnimationFrame(tick); }
+  function tick(t) {
+    drawLabels();
+    if (t < trackUntil) requestAnimationFrame(tick);
+  }
+  function drawLabels() {
+    if (!exploded) return;
+    var sr = stage.getBoundingClientRect();
+    var pts = PARTS.map(function (_, i) {
+      var a = model.querySelector('[data-a="' + i + '"]').getBoundingClientRect();
+      return { i: i, x: a.left - sr.left, y: a.top - sr.top };
+    });
+    // label y positions sorted, with minimum spacing
+    var order = pts.slice().sort(function (a, b) { return a.y - b.y; });
+    var last = -1e9;
+    order.forEach(function (p) { p.ly = Math.max(p.y, last + 52); last = p.ly; });
+    var svg = '';
+    order.forEach(function (p) {
+      var el = labels.querySelector('.lbl[data-i="' + p.i + '"]');
+      el.style.top = p.ly + 'px';
+      var x0 = 20 + 172;
+      svg += '<path d="M' + x0 + ' ' + p.ly + ' L' + (p.x - 6) + ' ' + p.y + '" stroke="#1A2855" stroke-width="1.3" stroke-dasharray="2 3" fill="none"/><circle cx="' + p.x + '" cy="' + p.y + '" r="3.5" fill="#1A2855"/>';
+      var dn = dots.querySelector('[data-i="' + p.i + '"]'); dn.style.left = p.x + 'px'; dn.style.top = p.y + 'px';
+    });
+    lines.innerHTML = svg;
+    dots.style.display = exploded ? '' : 'none';
+  }
+
+  // sound: a soft two-note chime, made in the browser
+  var actx;
+  function ding() {
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      [[1318.5, 0], [1760, .12]].forEach(function (n) {
+        var o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + n[1];
+        o.type = 'sine'; o.frequency.value = n[0];
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.22, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + .6);
+        o.connect(g).connect(actx.destination); o.start(t); o.stop(t + .65);
+      });
+    } catch (e) {}
+  }
+
+  function inZone() {
+    var a = dev.getBoundingClientRect(), z = zone.getBoundingClientRect();
+    var cx = a.left + a.width / 2, cy = a.top + a.height * .45;
+    var near = cx > z.left - 120 && cx < z.right + 120 && cy > z.top - 160 && cy < z.bottom + 120;
+    var hot = cx > z.left - 30 && cx < z.right + 30 && cy > z.top - 60 && cy < z.bottom + 40;
+    return { near: near, hot: hot };
+  }
+  function moveDev() { dev.style.transform = 'translate(' + dx + 'px,' + dy + 'px)'; }
+  function goHome() { dx = 0; dy = 0; moveDev(); phone.classList.remove('near', 'hot'); zone.classList.remove('near', 'hot'); }
+
+  function success() {
+    if (busy) return; busy = true;
+    var f = FRIENDS[made % FRIENDS.length]; made++;
+    document.getElementById('cnt').textContent = made;
+    ding();
+    if (navigator.vibrate) { try { navigator.vibrate([35, 60, 35]); } catch (e) {} }
+    dev.classList.remove('shake'); void dev.offsetWidth; dev.classList.add('shake');
+    var fl = document.getElementById('flash'); fl.classList.remove('on'); void fl.offsetWidth; fl.classList.add('on');
+    // pet grows: hatching after first friend, grown chick after the second
+    setPet([0, 2, 4][Math.min(made, 2)]); // 0 egg → 2 hatched → 4 grown up
+    document.getElementById('notif-t').textContent = 'You and ' + f.nm + ' are now friends!';
+    document.getElementById('cp-ini').textContent = f.ini; document.getElementById('cp-ini').style.background = f.col;
+    document.getElementById('cp-nm').textContent = f.nm; document.getElementById('cp-hd').textContent = f.hd; document.getElementById('cp-bio').textContent = f.bio;
+    document.getElementById('cp-pts').textContent = '+2 social points · ' + ['', 'your egg has hatched!', 'your pet has grown up!'][Math.min(made, 2)];
+    var n = document.getElementById('notif'), c = document.getElementById('cardpop');
+    n.classList.add('on'); setTimeout(function () { c.classList.add('on'); }, 350);
+    var row = document.createElement('div'); row.className = 'fr new';
+    row.innerHTML = '<span class="av" style="background:' + f.col + '">' + f.ini + '</span><span>' + f.nm + '<small>Added just now via NFC</small></span>';
+    document.getElementById('flist').insertBefore(row, document.getElementById('flist').firstChild);
+    setTimeout(goHome, 750);
+    setTimeout(function () { n.classList.remove('on'); }, 3000);
+    setTimeout(function () { c.classList.remove('on'); busy = false; }, 4200);
+  }
+
+  // ---------- pointer: drag to move (assembled) / drag to rotate (exploded) ----------
+  var down = null, lastTap = 0;
+  dev.addEventListener('pointerdown', function (e) {
+    if (busy) return;
+    down = { x: e.clientX, y: e.clientY, dx: dx, dy: dy, rx: rx, rz: rz, moved: false };
+    dev.setPointerCapture(e.pointerId);
+    if (!exploded) dev.classList.add('dragging'); else model.classList.add('live');
+  });
+  dev.addEventListener('pointermove', function (e) {
+    if (!down) {
+      if (!exploded && e.pointerType === 'mouse') { // gentle 3D tilt on hover
+        var r = dev.getBoundingClientRect();
+        ry = ((e.clientX - r.left) / r.width - .5) * 24; rx = -((e.clientY - r.top) / r.height - .5) * 18;
+        model.classList.add('live'); applyModel();
+      }
+      return;
+    }
+    var mx = e.clientX - down.x, my = e.clientY - down.y;
+    if (Math.abs(mx) + Math.abs(my) > 6) down.moved = true;
+    if (exploded) {
+      rz = down.rz + mx * .5; rx = Math.max(10, Math.min(85, down.rx - my * .35)); applyModel(); trackLabels(50);
+    } else {
+      dx = down.dx + mx; dy = down.dy + my; moveDev();
+      var s = inZone();
+      zone.classList.toggle('near', s.near); zone.classList.toggle('hot', s.hot);
+    }
+  });
+  dev.addEventListener('pointerleave', function () { if (!down && !exploded) { rx = 0; ry = 0; model.classList.remove('live'); applyModel(); } });
+  function end(e) {
+    if (!down) return;
+    var d = down; down = null;
+    dev.classList.remove('dragging'); model.classList.remove('live');
+    if (!d.moved) {
+      var now = Date.now();
+      if (now - lastTap < 320) { setExploded(!exploded); lastTap = 0; } else lastTap = now;
+      if (!exploded) { rx = 0; ry = 0; applyModel(); }
+      return;
+    }
+    if (!exploded) {
+      if (inZone().hot) {
+        var z = zone.getBoundingClientRect(), a = dev.getBoundingClientRect();
+        dx += (z.left + z.width / 2) - (a.left + a.width / 2); dy += (z.top + z.height * .4) - (a.top + a.height * .45); moveDev();
+        zone.classList.remove('near'); zone.classList.add('hot');
+        setTimeout(function () { zone.classList.remove('hot'); }, 900);
+        success();
+      } else goHome();
+    }
+  }
+  dev.addEventListener('pointerup', end);
+  dev.addEventListener('pointercancel', end);
+
+  bExplode.addEventListener('click', function () { setExploded(!exploded); });
+  document.getElementById('b-tap').addEventListener('click', function () {
+    if (exploded) setExploded(false);
+    var z = zone.getBoundingClientRect(), a = dev.getBoundingClientRect();
+    dx = (z.left + z.width / 2) - (a.left + a.width / 2) + dx; dy = (z.top + z.height * .4) - (a.top + a.height * .45) + dy; moveDev();
+    setTimeout(success, 550);
+  });
+  dev.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExploded(!exploded); }
+    if (e.key === 't' || e.key === 'T') document.getElementById('b-tap').click();
+  });
+  window.addEventListener('resize', function () { trackLabels(100); });
+
+  setExploded(false);
+
+  function report() { try { parent.postMessage({ imppetsDeviceHeight: document.documentElement.scrollHeight }, '*'); } catch (e) {} }
+  report(); window.addEventListener('resize', report); new MutationObserver(report).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class'] });
+})();
+</script>
+</body>
+</html>

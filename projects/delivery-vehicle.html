@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Hando — Daisy Fang</title>
+  <meta name="description" content="Hando: a remote-control delivery vehicle with live video and a Wi-Fi unlock, built to cut person-to-person contact in post-pandemic deliveries. Independent project by Daisy Fang.">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .sys { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
+    .sys > div { border-top: 1px solid var(--ink); padding-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+    .sys h3 { margin: 0; font-weight: 400; font-size: 24px; line-height: 1.2; }
+    .sys p { margin: 0; color: var(--muted); font-size: 16px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+    .chips li { font-family: var(--mono); font-size: 11.5px; border: 1px solid var(--line); padding: 4px 9px; border-radius: 999px; background: var(--white); }
+    .fig .frame.auto { aspect-ratio: auto; padding: clamp(12px, 2vw, 24px); }
+    .fig .frame.auto img { height: auto; }
+    .tests { width: 100%; border-collapse: collapse; font-size: 16px; }
+    .tests th, .tests td { text-align: left; padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+    .tests th { font-family: var(--mono); font-size: 11px; font-weight: 400; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    .tests td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .tests td.n b { font-weight: 500; color: var(--accent); }
+    .tbl-wrap { overflow-x: auto; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="topbar mono">
+    <a class="ul" href="../index.html#work">← Index</a>
+    <span class="muted">04 / 04 — Hando</span>
+    <nav aria-label="Main">
+      <a class="ul" href="../index.html#about">About</a>
+      <a class="ul accent" href="../index.html#contact">Contact ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="case-hero split">
+      <div class="hero-text">
+        <p class="mono accent" style="margin:0">Case study 04 · Electronics → Prototype</p>
+        <h1 class="reveal">
+          <span class="ln"><span style="--i:0">Hando</span></span>
+          <span class="ln"><span style="--i:1"><em>The hand-off,</em></span></span>
+          <span class="ln"><span style="--i:2"><em>without the hands.</em></span></span>
+        </h1>
+        <p class="lede">A remote-control delivery vehicle for wards and quarantine. It carries a parcel the last few metres, streams live video to the operator and unlocks over Wi-Fi, so nobody has to hand anything over.</p>
+      </div>
+      <figure class="hero-photo">
+        <img src="../assets/img/rcv-hando-cut.webp" alt="Hando: a compact white delivery vehicle with a dark tinted hood that curves over the front" width="1332" height="1210">
+      </figure>
+    </section>
+
+    <dl class="meta">
+      <div><dt>My role</dt><dd><strong>Designer &amp; builder</strong>: research, electronics, code, CAD and testing</dd></div>
+      <div><dt>Context</dt><dd>Summer research project with a final defence, June–September 2023</dd></div>
+      <div><dt>Hardware</dt><dd>ESP32-CAM (OV2640), L298N motor driver, ESP-01S relay, solenoid lock</dd></div>
+      <div><dt>Tools</dt><dd>Arduino C++, Blinker IoT, Fusion 360, Rhino 7, KeyShot 11, 3D printing</dd></div>
+    </dl>
+
+    <!-- ========== 可交互：遥控小车 ========== -->
+    <section class="try-app" aria-labelledby="drive-title">
+      <div class="anatomy-head">
+        <span class="mono accent">Interactive simulation</span>
+        <h3 id="drive-title">Drive it to the bed, then unlock</h3>
+        <a class="ul mono" href="rcv-drive.html" target="_blank" rel="noopener">Open full screen ↗</a>
+      </div>
+      <iframe id="drive-frame" src="rcv-drive.html" title="Interactive simulation: drive the delivery vehicle through a hospital ward with the remote console and unlock its storage" loading="lazy" style="height:640px"></iframe>
+    </section>
+
+    <!-- ========== 01 挑战 ========== -->
+    <section class="stage-sec">
+      <div class="stage-label"><span class="step">01</span><h2>The challenge</h2></div>
+      <div class="stage-body">
+        <p class="big" data-fade>How might a delivery reach someone in quarantine or on an infectious ward without anyone having to hand it over?</p>
+        <p data-fade>By August 2023 COVID-19 had caused over 769 million confirmed cases worldwide. Demand for home delivery rose sharply during lockdowns, yet the last step, handing the parcel to a person, was still a moment of human contact. The same risk exists in hospitals, where staff carry supplies into isolation rooms.</p>
+        <p data-fade>I reviewed recent research on autonomous and remotely operated delivery vehicles, from a hospital delivery robot trialled on infectious-disease wards to commercial services such as Nuro and Starship. They pointed to the same three needs: drive remotely, see where you are going, and release the goods only to the right person.</p>
+      </div>
+    </section>
+
+    <!-- ========== 02 系统 ========== -->
+    <section class="stage-sec">
+      <div class="stage-label"><span class="step">02</span><h2>How it works</h2></div>
+      <div class="stage-body">
+        <div class="sys" data-fade>
+          <div>
+            <h3>Camera</h3>
+            <p>An ESP32-CAM with an OV2640 sensor streams video over Wi-Fi to a web page at the board’s IP address, which any phone browser can open.</p>
+            <ul class="chips"><li>ESP32-CAM</li><li>OV2640</li><li>C++</li></ul>
+          </div>
+          <div>
+            <h3>Movement</h3>
+            <p>The same ESP32 drives an L298N motor driver. Forward, back, left, right and stop buttons on the page send commands to the four motors.</p>
+            <ul class="chips"><li>L298N</li><li>4 DC motors</li><li>C++</li></ul>
+          </div>
+          <div>
+            <h3>Lock</h3>
+            <p>An ESP-01S Wi-Fi module switches a relay that powers a solenoid lock. A button in a Blinker mobile app pops the latch to open the storage box.</p>
+            <ul class="chips"><li>ESP-01S</li><li>Relay</li><li>Solenoid lock</li><li>Blinker</li></ul>
+          </div>
+        </div>
+        <figure class="fig" data-fade>
+          <div class="frame white auto"><img src="../assets/img/rcv-system.webp" alt="System map: the camera runs on an ESP32-CAM, the motors on an L298N driver, and the lock on an ESP-01S with a relay and solenoid lock controlled from Blinker" width="1152" height="922" loading="lazy" style="max-width:760px;margin:0 auto"></div>
+          <figcaption class="mono"><span>How the vehicle operates</span><span class="muted">System map</span></figcaption>
+        </figure>
+        <div class="duo" data-fade>
+          <figure class="fig">
+            <div class="frame white auto"><img src="../assets/img/rcv-ui.webp" alt="Phone browser showing the live camera feed with Forward, Left, Stop, Right, Backward and light buttons" width="460" height="1028" loading="lazy" style="width:auto;max-height:520px;margin:0 auto"></div>
+            <figcaption class="mono"><span>Remote console</span><span class="muted">Served by the ESP32-CAM</span></figcaption>
+          </figure>
+          <figure class="fig">
+            <div class="frame cover" style="aspect-ratio:1596/1065"><img src="../assets/img/rcv-chassis.webp" alt="Four-wheel chassis from above with the battery box, L298N driver and wiring" width="1596" height="1065" loading="lazy"></div>
+            <figcaption class="mono"><span>Car base</span><span class="muted">Chassis, driver and battery</span></figcaption>
+          </figure>
+          <figure class="fig">
+            <div class="frame cover" style="aspect-ratio:16/9"><img src="../assets/img/rcv-relay.webp" alt="ESP-01S Wi-Fi module mounted on a relay board" width="1400" height="788" loading="lazy"></div>
+            <figcaption class="mono"><span>Wi-Fi relay</span><span class="muted">ESP-01S</span></figcaption>
+          </figure>
+          <figure class="fig">
+            <div class="frame cover" style="aspect-ratio:16/9"><img src="../assets/img/rcv-lock.webp" alt="Black electromagnetic solenoid lock" width="1400" height="788" loading="lazy"></div>
+            <figcaption class="mono"><span>Solenoid lock</span><span class="muted">Pops the latch when powered</span></figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 03 造型与打印 ========== -->
+    <section class="stage-sec">
+      <div class="stage-label"><span class="step">03</span><h2>Shell &amp; prototyping</h2></div>
+      <div class="stage-body">
+        <p data-fade>I modelled the chassis in Fusion 360 to fix the dimensions, sketched how the storage box would open, then built the full shell in Rhino 7 with a transparent hood over the storage space.</p>
+        <div class="duo" data-fade>
+          <figure class="fig">
+            <div class="frame white auto"><img src="../assets/img/rcv-sketch-1.webp" alt="First hand-drawn draft listing storage, remote control and remote camera, with the storage box and outer shell sketched over the chassis" width="1080" height="1484" loading="lazy"></div>
+            <figcaption class="mono"><span>First draft</span><span class="muted">Requirements &amp; layout</span></figcaption>
+          </figure>
+          <figure class="fig">
+            <div class="frame white auto"><img src="../assets/img/rcv-sketch-2.webp" alt="Sketches of the shell and opening drawn over the chassis model in side and top views" width="1080" height="1395" loading="lazy"></div>
+            <figcaption class="mono"><span>Sketching over the chassis</span><span class="muted">Fusion 360 base</span></figcaption>
+          </figure>
+        </div>
+        <figure class="fig" data-fade>
+          <div class="frame white auto"><img src="../assets/img/rcv-rhino.webp" alt="Rhino 7 viewports showing the shell in plan, perspective, front and side views" width="1600" height="732" loading="lazy"></div>
+          <figcaption class="mono"><span>Shell model</span><span class="muted">Rhino 7</span></figcaption>
+        </figure>
+        <ol class="timeline">
+          <li data-fade style="--i:0">
+            <div class="frame contain"><img src="../assets/img/rcv-print1.webp" alt="First 3D-printed shell parts beside the first model" loading="lazy"></div>
+            <h3>Print 1: did not fit</h3>
+            <p>Measurement errors meant the first printed shell could not be mounted on the chassis.</p>
+          </li>
+          <li data-fade style="--i:1">
+            <div class="frame contain"><img src="../assets/img/rcv-fix.webp" alt="Printed base and model with the changed wheel clearances marked in red" loading="lazy"></div>
+            <h3>Re-measure &amp; redesign</h3>
+            <p>I re-measured the car, left clearance for the tyres and parts, and remodelled it in two days. A cardboard shell was ready as a backup.</p>
+          </li>
+          <li data-fade style="--i:2">
+            <div class="frame contain"><img src="../assets/img/rcv-final.webp" alt="Final prototype: white 3D-printed shell with a dark tinted hood" loading="lazy"></div>
+            <h3>Print 2: final shell</h3>
+            <p>The second print fitted. A tinted hood lets you see the goods inside while shading them from light.</p>
+          </li>
+        </ol>
+        <dl class="mine" data-fade>
+          <dt>My role</dt>
+          <dd>I led the project from June to September 2023. I learnt basic C++, wiring and 3D modelling for it, wired the electronics, wrote the code for the camera, motors and lock, designed and modelled the shell, and rendered the vehicle in KeyShot 11. University mentors advised me along the way, and a local 3D-printing studio printed the shell over a week and a half.</dd>
+        </dl>
+      </div>
+    </section>
+
+    <!-- ========== 04 测试 ========== -->
+    <section class="stage-sec">
+      <div class="stage-label"><span class="step">04</span><h2>Testing</h2></div>
+      <div class="stage-body">
+        <p data-fade>I scored each function from 0 to 1 against set criteria and ran four indoor tests in a hospital-like setting, with Wi-Fi coverage and people walking around.</p>
+        <div class="tbl-wrap" data-fade>
+          <table class="tests">
+            <thead><tr><th>Function</th><th>Test 1</th><th>Test 2</th><th>Test 3</th><th>Test 4</th><th>What changed</th></tr></thead>
+            <tbody>
+              <tr><td>Movement</td><td class="n">0.8</td><td class="n">0.3</td><td class="n"><b>1.0</b></td><td class="n"><b>1.0</b></td><td>Rewired the motors to the driver board and fixed an undercharged battery.</td></tr>
+              <tr><td>Camera</td><td class="n">0.2</td><td class="n">0.3</td><td class="n"><b>1.0</b></td><td class="n"><b>1.0</b></td><td>Video delay fell from 5.88 s to under 0.2 s.</td></tr>
+              <tr><td>Lock</td><td class="n">0.4</td><td class="n">0.3</td><td class="n"><b>0.7</b></td><td class="n">0.5</td><td>Unlocked in 1.5–3 s, but one main board burned out and the latch did not always release cleanly.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="stats3" data-fade>
+          <div><b>&lt;0.2 s</b><span>camera delay by the third test, down from 5.88 s</span></div>
+          <div><b class="accent">2</b><span>shell prints before the vehicle fitted</span></div>
+          <div><b>7 m</b><span>range beyond which remote unlocking failed</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 05 结果 ========== -->
+    <section class="stage-sec">
+      <div class="stage-label"><span class="step">05</span><h2>Outcome</h2></div>
+      <div class="stage-body">
+        <figure class="fig" data-fade>
+          <div class="frame" style="aspect-ratio:16/10"><img src="../assets/img/rcv-hando-cut.webp" alt="Hando: white shell with a dark tinted hood curving over the front, two dark front panels and a lock window" width="1332" height="1210" loading="lazy" style="max-width:560px"></div>
+          <figcaption class="mono"><span>Hando</span><span class="muted">Re-rendered from the Rhino views</span></figcaption>
+        </figure>
+        <figure class="fig" data-fade>
+          <div class="frame cover" style="aspect-ratio:766/342"><img src="../assets/img/rcv-final.webp" alt="Final prototype from the front and from the side: white printed shell with a dark tinted hood" width="766" height="342" loading="lazy"></div>
+          <figcaption class="mono"><span>The real prototype</span><span class="muted">Printed shell on the car base</span></figcaption>
+        </figure>
+        <p data-fade>The final vehicle drives under remote control and streams live video reliably within Wi-Fi range. The remote unlock works up close but is not yet dependable: the Blinker connection was unstable and failed beyond about 7 m.</p>
+        <p class="limit" data-fade>Next steps: a stronger camera module to cut lag when the scene changes quickly, a more reliable unlock, and route planning and face recognition so only the right person can open the box.</p>
+      </div>
+    </section>
+
+    <a class="doc-link" href="../assets/docs/Remote_Control_Delivery_Vehicle.pdf" target="_blank" rel="noopener" data-fade>
+      <span class="mono accent">Explore more details</span>
+      <span class="doc-title">Hando: research report</span>
+      <span class="mono muted">Research report with test tables · 19 pages · PDF</span>
+      <i aria-hidden="true">↗</i>
+    </a>
+  </main>
+
+  <nav class="next" aria-label="More work">
+    <a class="btn" href="cannele.html">← Cannelé StorageBox</a>
+    <a class="big-link" href="../index.html#work">All projects <i>→</i></a>
+  </nav>
+</div>
+<script src="../js/main.js"></script>
+<script>
+  window.addEventListener('message', function (e) {
+    if (e.data && e.data.rcvHeight) document.getElementById('drive-frame').style.height = e.data.rcvHeight + 'px';
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Drive the delivery vehicle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    :root { --bg:#F2F0EB; --panel:#E8E5DE; --ink:#161514; --muted:#5C5853; --line:#C9C4BB; --accent:#A63F2A; --white:#fff;
+      --serif:'Newsreader',Georgia,serif; --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--serif); }
+    button { font: inherit; color: inherit; cursor: pointer; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; align-items: start; }
+    @media (max-width: 820px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+    .map { position: relative; width: 100%; background: var(--white); border: 1px solid var(--line); aspect-ratio: 3 / 2; touch-action: none; }
+    .map canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    .tag { position: absolute; left: 14px; top: 12px; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); pointer-events: none; }
+    @media (max-width: 520px) { .tag { display: none; } }
+    .toast { position: absolute; left: 50%; bottom: 14px; transform: translate(-50%, 8px); background: var(--ink); color: #fff; font-family: var(--mono); font-size: 12px; line-height: 1.4; padding: 8px 14px; border-radius: 4px; opacity: 0; transition: opacity .3s, transform .3s; pointer-events: none; max-width: 90%; text-align: center; }
+    .toast.on { opacity: 1; transform: translate(-50%, 0); }
+    .toast.bad { background: var(--accent); }
+    /* phone-style console, after the page served by the ESP32-CAM */
+    .console { background: var(--white); border: 1px solid var(--line); padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+    .url { font-family: var(--mono); font-size: 11.5px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; }
+    .cam { position: relative; height: 120px; background: #2B2A28; overflow: hidden; display: grid; place-items: center; color: #fff; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; }
+    .cam canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .cam .rec { position: absolute; left: 8px; top: 6px; }
+    .cam .lat { position: absolute; right: 8px; top: 6px; color: #F4D27A; }
+    .pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .pad button { min-height: 44px; border: 1px solid var(--line); background: var(--panel); font-family: var(--mono); font-size: 11.5px; letter-spacing: .04em; border-radius: 3px; }
+    .pad button[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+    .pad .stop { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .pad .sp { visibility: hidden; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .row2 button { min-height: 40px; border: 1px solid #E5C449; background: #F4D27A; font-family: var(--mono); font-size: 11.5px; border-radius: 3px; }
+    .unlock { min-height: 46px; border: 1px solid var(--ink); background: var(--ink); color: #fff; font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; border-radius: 999px; }
+    .unlock:hover { background: var(--accent); border-color: var(--accent); }
+    .read { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 10px; }
+    .read b { color: var(--ink); font-weight: 500; }
+    .read b.far { color: var(--accent); }
+    .hint { margin: 10px 0 0; font-style: italic; color: var(--muted); font-size: 16px; }
+  </style>
+</head>
+<body>
+  <div class="grid">
+    <div class="map" id="map">
+      <canvas id="cv" aria-label="Top-down plan of a hospital ward with the delivery vehicle. Drive it with the console or the arrow keys."></canvas>
+      <span class="tag">Ward plan · 12 m × 8 m</span>
+      <div class="toast" id="toast" role="status"></div>
+    </div>
+    <div class="console" aria-label="Remote console">
+      <span class="url">http://192.168.3.42/</span>
+      <div class="cam" aria-hidden="true"><canvas id="feed"></canvas><span class="rec">● LIVE</span><span class="lat" id="lat">&lt;0.2 s</span></div>
+      <div class="pad">
+        <span class="sp"></span><button type="button" data-cmd="fwd" aria-pressed="false">Forward</button><span class="sp"></span>
+        <button type="button" data-cmd="left" aria-pressed="false">Left</button><button type="button" class="stop" data-cmd="stop">Stop</button><button type="button" data-cmd="right" aria-pressed="false">Right</button>
+        <span class="sp"></span><button type="button" data-cmd="back" aria-pressed="false">Backward</button><span class="sp"></span>
+      </div>
+      <div class="row2"><button type="button" id="lon">Light ON</button><button type="button" id="loff">Light OFF</button></div>
+      <button type="button" class="unlock" id="unlock">Unlock storage</button>
+      <div class="read"><span>Console ↔ vehicle</span><b id="dist">0.0 m</b></div>
+    </div>
+  </div>
+  <p class="hint">Deliver the parcel to the bed in Room 2 without anyone touching it. Use the console or your arrow keys, then unlock the storage. Unlocking only works within 7 m of the nurses’ station (dashed circle), as it did in my tests.</p>
+
+<script>
+(function () {
+  var W = 12, H = 8; // metres
+  var map = document.getElementById('map'), cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+  var feed = document.getElementById('feed'), fctx = feed.getContext('2d');
+  var station = { x: 3.4, y: 6.8 };
+  var walls = [ // [x, y, w, h] in metres
+    [0, 0, 12, .15], [0, 7.85, 12, .15], [0, 0, .15, 8], [11.85, 0, .15, 8],
+    [6.2, 0, .15, 2.6], [6.2, 4.0, .15, 4.0],          // partition with a doorway between the two rooms
+    [3.0, 0, .15, 1.2]
+  ];
+  var furniture = [
+    { r: [9.2, 1.0, 2.2, 1.1], label: 'Bed', bed: true },
+    { r: [8.2, 1.0, .7, .6], label: '' },
+    { r: [9.2, 5.6, 2.2, 1.1], label: 'Bed' },
+    { r: [2.4, 6.3, 2.0, 1.1], label: 'Nurses’ station', station: true },
+    { r: [3.6, .4, 1.6, .8], label: 'Supplies' }
+  ];
+  var target = { x: 8.4, y: 2.7 };
+  var car = { x: 1.6, y: 4.6, a: -0.3, v: 0, w: 0, open: 0, light: false };
+  var cmd = { fwd: 0, back: 0, left: 0, right: 0 }, keys = {};
+  var delivered = false, arrivedShown = false;
+
+  function px() { return cv.width / W; }
+  function resize() {
+    var r = window.devicePixelRatio || 1, w = map.clientWidth, h = map.clientHeight;
+    cv.width = Math.round(w * r); cv.height = Math.round(h * r);
+    var fw = feed.clientWidth, fh = feed.clientHeight; feed.width = Math.round(fw * r); feed.height = Math.round(fh * r);
+  }
+  var toastT;
+  function toast(msg, bad) { var t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast on' + (bad ? ' bad' : ''); clearTimeout(toastT); toastT = setTimeout(function () { t.className = 'toast'; }, 2600); }
+
+  // console buttons: like the ESP32 page, a direction keeps running until Stop
+  [].forEach.call(document.querySelectorAll('.pad button'), function (b) {
+    b.addEventListener('click', function () {
+      var c = b.dataset.cmd; cmd = { fwd: 0, back: 0, left: 0, right: 0 };
+      if (c !== 'stop') cmd[c] = 1;
+      [].forEach.call(document.querySelectorAll('.pad button[aria-pressed]'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+    });
+  });
+  document.getElementById('lon').addEventListener('click', function () { car.light = true; });
+  document.getElementById('loff').addEventListener('click', function () { car.light = false; });
+  window.addEventListener('keydown', function (e) {
+    var m = { ArrowUp: 'fwd', ArrowDown: 'back', ArrowLeft: 'left', ArrowRight: 'right' }[e.key];
+    if (m) { keys[m] = 1; e.preventDefault(); }
+    if (e.key === ' ') { cmd = { fwd: 0, back: 0, left: 0, right: 0 }; e.preventDefault(); }
+  });
+  window.addEventListener('keyup', function (e) {
+    var m = { ArrowUp: 'fwd', ArrowDown: 'back', ArrowLeft: 'left', ArrowRight: 'right' }[e.key];
+    if (m) keys[m] = 0;
+  });
+  function distToStation() { return Math.hypot(car.x - station.x, car.y - station.y); }
+  document.getElementById('unlock').addEventListener('click', function () {
+    var d = distToStation();
+    if (d > 7) { toast('Unlock failed: ' + d.toFixed(1) + ' m from the console. Beyond 7 m the Wi-Fi relay did not respond.', true); return; }
+    car.open = car.open > .5 ? 0 : 1;
+    if (car.open && Math.hypot(car.x - target.x, car.y - target.y) < 1.2) { delivered = true; toast('Delivered with no hand-off. The patient takes the parcel from the open box.'); }
+    else toast(car.open ? 'Lock released: the solenoid pops the latch.' : 'Storage locked.');
+  });
+
+  function hits(x, y) {
+    var R = .32;
+    if (x < R || y < R || x > W - R || y > H - R) return true;
+    var all = walls.concat(furniture.map(function (f) { return f.r; }));
+    for (var i = 0; i < all.length; i++) {
+      var r = all[i], cx = Math.max(r[0], Math.min(x, r[0] + r[2])), cy = Math.max(r[1], Math.min(y, r[1] + r[3]));
+      if (Math.hypot(x - cx, y - cy) < R) return true;
+    }
+    return false;
+  }
+
+  function drawFeed(t) {
+    var w = feed.width, h = feed.height; if (!w) return;
+    // a simple forward view: floor, a wall and whatever lies ahead
+    var g = fctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#5A5752'); g.addColorStop(.55, '#77736C'); g.addColorStop(.56, '#9B7B5B'); g.addColorStop(1, '#6E5640');
+    fctx.fillStyle = g; fctx.fillRect(0, 0, w, h);
+    var ahead = 0; for (var s = .2; s < 6; s += .1) { if (hits(car.x + Math.cos(car.a) * s, car.y + Math.sin(car.a) * s)) { ahead = s; break; } }
+    var near = ahead ? Math.max(0, 1 - ahead / 6) : 0;
+    fctx.fillStyle = 'rgba(232,229,222,' + (.25 + near * .65) + ')';
+    var bw = w * (.2 + near * .7), bh = h * (.15 + near * .5);
+    fctx.fillRect((w - bw) / 2, h * .55 - bh * .7, bw, bh);
+    if (car.light) { var lg = fctx.createRadialGradient(w / 2, h * .8, 4, w / 2, h * .8, w * .6); lg.addColorStop(0, 'rgba(255,248,200,.55)'); lg.addColorStop(1, 'rgba(255,248,200,0)'); fctx.fillStyle = lg; fctx.fillRect(0, 0, w, h); }
+    // scanlines for a little webcam texture
+    fctx.fillStyle = 'rgba(0,0,0,.08)'; for (var y = (t / 40) % 4; y < h; y += 4) fctx.fillRect(0, y, w, 1);
+  }
+
+  function rr(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+  function draw(t) {
+    var p = px();
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.scale(p, p);
+    // floor grid (1 m)
+    ctx.strokeStyle = '#EFECE6'; ctx.lineWidth = 1 / p;
+    for (var i = 1; i < W; i++) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, H); ctx.stroke(); }
+    for (i = 1; i < H; i++) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(W, i); ctx.stroke(); }
+    // 7 m range from the console
+    var d = distToStation();
+    ctx.beginPath(); ctx.arc(station.x, station.y, 7, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(166,63,42,.04)'; ctx.fill();
+    ctx.setLineDash([.15, .12]); ctx.strokeStyle = d > 7 ? 'rgba(166,63,42,.9)' : 'rgba(166,63,42,.35)'; ctx.lineWidth = 2 / p; ctx.stroke(); ctx.setLineDash([]);
+    // walls + furniture
+    ctx.fillStyle = '#161514'; walls.forEach(function (r) { ctx.fillRect(r[0], r[1], r[2], r[3]); });
+    furniture.forEach(function (f) {
+      var r = f.r; ctx.fillStyle = f.station ? '#E8E5DE' : '#F2F0EB'; ctx.strokeStyle = '#C9C4BB'; ctx.lineWidth = 1.5 / p;
+      ctx.fillRect(r[0], r[1], r[2], r[3]); ctx.strokeRect(r[0], r[1], r[2], r[3]);
+      if (f.label) { ctx.fillStyle = '#5C5853'; ctx.font = (11 / p * (window.devicePixelRatio || 1)) + 'px IBM Plex Mono, monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(f.label, r[0] + r[2] / 2, r[1] + r[3] / 2); }
+    });
+    ctx.font = (11 / p * (window.devicePixelRatio || 1)) + 'px IBM Plex Mono, monospace'; ctx.fillStyle = '#A63F2A'; ctx.textAlign = 'left';
+    ctx.fillText('ROOM 1', .45, 1.0); ctx.fillText('ROOM 2', 6.6, 1.0);
+    // delivery target
+    var pulse = .5 + .5 * Math.sin(t / 300);
+    ctx.beginPath(); ctx.arc(target.x, target.y, .55 + pulse * .12, 0, Math.PI * 2); ctx.strokeStyle = delivered ? '#161514' : 'rgba(166,63,42,.8)'; ctx.lineWidth = 2 / p; ctx.stroke();
+    ctx.fillStyle = '#A63F2A'; ctx.textAlign = 'center'; ctx.fillText(delivered ? 'DELIVERED' : 'DROP-OFF', target.x, target.y + .95);
+    // console link
+    ctx.beginPath(); ctx.moveTo(station.x, station.y); ctx.lineTo(car.x, car.y); ctx.strokeStyle = 'rgba(22,21,20,.18)'; ctx.lineWidth = 1 / p; ctx.stroke();
+    // vehicle (white shell, dark hood, after the final prototype)
+    ctx.save(); ctx.translate(car.x, car.y); ctx.rotate(car.a);
+    if (car.light) { var lg = ctx.createRadialGradient(.4, 0, .05, 1.6, 0, 1.4); lg.addColorStop(0, 'rgba(244,210,122,.55)'); lg.addColorStop(1, 'rgba(244,210,122,0)'); ctx.fillStyle = lg; ctx.beginPath(); ctx.moveTo(.35, -.12); ctx.lineTo(2.6, -1.1); ctx.lineTo(2.6, 1.1); ctx.lineTo(.35, .12); ctx.fill(); }
+    ctx.fillStyle = 'rgba(0,0,0,.12)'; rr(-.42, -.32, .86, .68, .14); ctx.fill();
+    ctx.fillStyle = '#2B2A28'; [[-.3, -.36], [.18, -.36], [-.3, .28], [.18, .28]].forEach(function (w) { ctx.fillRect(w[0], w[1], .18, .08); });
+    ctx.fillStyle = '#FFFFFF'; ctx.strokeStyle = '#161514'; ctx.lineWidth = 1.5 / p; rr(-.4, -.3, .8, .6, .13); ctx.fill(); ctx.stroke();
+    // hood slides back when unlocked
+    var o = car.open * .34;
+    ctx.fillStyle = '#1D1C1B'; rr(-.26 - o, -.22, .5, .44, .07); ctx.fill();
+    if (car.open > .05) { ctx.fillStyle = '#C8A46A'; ctx.fillRect(-.12, -.12, .26 * car.open, .24); }
+    ctx.fillStyle = '#A63F2A'; ctx.beginPath(); ctx.arc(.33, 0, .045, 0, Math.PI * 2); ctx.fill(); // camera
+    ctx.restore();
+  }
+
+  var prev = performance.now();
+  function frame(now) {
+    var dt = Math.min(.05, (now - prev) / 1000); prev = now;
+    var f = ((cmd.fwd || keys.fwd) ? 1 : 0) - ((cmd.back || keys.back) ? 1 : 0), turn = ((cmd.right || keys.right) ? 1 : 0) - ((cmd.left || keys.left) ? 1 : 0);
+    car.v += ((f * 1.3) - car.v) * Math.min(1, dt * 6); car.w += ((turn * 1.9) - car.w) * Math.min(1, dt * 8);
+    car.a += car.w * dt;
+    var nx = car.x + Math.cos(car.a) * car.v * dt, ny = car.y + Math.sin(car.a) * car.v * dt;
+    if (!hits(nx, ny)) { car.x = nx; car.y = ny; } else if (Math.abs(car.v) > .2) { car.v = 0; cmd = { fwd: 0, back: 0, left: 0, right: 0 }; [].forEach.call(document.querySelectorAll('.pad button[aria-pressed]'), function (x) { x.setAttribute('aria-pressed', 'false'); }); toast('Bump. The live camera feed is how the operator avoids obstacles.'); }
+    car.open += ((car.open > .5 ? 1 : 0) - car.open) * Math.min(1, dt * 8);
+    if (!arrivedShown && Math.hypot(car.x - target.x, car.y - target.y) < 1.2) { arrivedShown = true; toast('Arrived at the bed. Now unlock the storage.'); }
+    var d = distToStation(), db = document.getElementById('dist'); db.textContent = d.toFixed(1) + ' m'; db.className = d > 7 ? 'far' : '';
+    draw(now); drawFeed(now);
+    requestAnimationFrame(frame);
+  }
+  resize(); window.addEventListener('resize', resize);
+  requestAnimationFrame(frame);
+  function report() { try { parent.postMessage({ rcvHeight: document.documentElement.scrollHeight }, '*'); } catch (e) {} }
+  report(); window.addEventListener('resize', report); setTimeout(report, 400);
+})();
+</script>
+</body>
+</html>

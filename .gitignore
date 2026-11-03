@@ -1,0 +1,11 @@
+# Working files that should not go online
+.DS_Store
+*.pptx
+.~*
+_claude_tmp/
+delivery-vehicle-update/
+delivery-vehicle-update.zip
+CV_Product_Targeted_1.pdf
+preview-*.html
+previews/
+assets/vendor/
