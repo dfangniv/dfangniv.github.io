@@ -6,7 +6,8 @@
   <title>Cannelé StorageBox 3D viewer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=IBM+Plex+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=IBM+Plex+Mono:wght@400;500&display=swap"></noscript>
   <style>
     :root { --cream: #FBF1EE; --pink: #F6DADA; --cherry: #9E1B2B; --ink: #3A1E1E; --muted: #7A5A58; --line: #EBCACA;
       --serif: 'Playfair Display', Georgia, serif; --mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace; --ease: cubic-bezier(.16,1,.3,1); }
@@ -27,7 +28,7 @@
     @media (max-width: 700px) { .hint { text-align: left; } }
     .stage { position: relative; height: 620px; border-radius: 4px; overflow: hidden; background: radial-gradient(120% 90% at 50% 35%, #FFF7F5 0%, #F6DADA 70%, #EFC9C9 100%); cursor: grab; touch-action: none; }
     .stage.grabbing { cursor: grabbing; }
-    @media (max-width: 700px) { .stage { height: 460px; } }
+    @media (max-width: 700px) { .stage { height: 420px; } }
     canvas { width: 100%; height: 100%; display: block; }
     .tag { position: absolute; left: 18px; top: 16px; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--cherry); pointer-events: none; }
     .name { position: absolute; left: 18px; bottom: 16px; pointer-events: none; }
@@ -39,6 +40,8 @@
     .no-gl .fallback { display: grid; }
     .toast { position: absolute; left: 50%; top: 18px; transform: translate(-50%, -10px); background: var(--cherry); color: #fff; font-family: var(--mono); font-size: 12px; padding: 8px 14px; border-radius: 999px; opacity: 0; transition: opacity .3s, transform .3s; pointer-events: none; }
     .toast.on { opacity: 1; transform: translate(-50%, 0); }
+      html { touch-action: manipulation; }
+    @media (max-width: 480px) { .help { display: none; } .name b { font-size: 20px; } }
   </style>
 </head>
 <body>
@@ -160,7 +163,7 @@
   var cw = CW.jelly;
 
   /* ---------- camera + interaction ---------- */
-  var yaw = -0.6, pitch = 0.32, dist = 260, target = [0, 0, 52], auto = true, lastUser = 0;
+  var BASE = (window.innerWidth < 520 ? 330 : 260); var yaw = -0.6, pitch = 0.32, dist = BASE, target = [0, 0, 52], auto = true, lastUser = 0;
   var lidT = 0, lidGoal = 0, bounce = 0;
   var drag = null, pinch = null;
   stage.addEventListener('pointerdown', function (e) { if (e.target.closest('button')) return; drag = { x: e.clientX, y: e.clientY, yaw: yaw, pitch: pitch, id: e.pointerId }; stage.setPointerCapture(e.pointerId); stage.classList.add('grabbing'); auto = false; lastUser = performance.now(); });
@@ -203,7 +206,7 @@
     lidBtn.textContent = lidGoal ? 'Press the lid shut' : 'Open the lid';
     if (lidGoal) { toast('Room for clips, jewellery & spoons'); }
   });
-  document.getElementById('reset').addEventListener('click', function () { yaw = -0.6; pitch = 0.32; dist = 260; auto = true; });
+  document.getElementById('reset').addEventListener('click', function () { yaw = -0.6; pitch = 0.32; dist = BASE; auto = true; });
   [].forEach.call(document.querySelectorAll('.sw'), function (b) {
     b.addEventListener('click', function () {
       [].forEach.call(document.querySelectorAll('.sw'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
@@ -260,8 +263,27 @@
   }
   requestAnimationFrame(frame);
 
-  function report() { try { parent.postMessage({ canneleHeight: document.documentElement.scrollHeight }, '*'); } catch (e) {} }
+  function report() { try { parent.postMessage({ canneleHeight: Math.ceil(document.body.getBoundingClientRect().height) }, '*'); } catch (e) {} }
   report(); window.addEventListener('resize', report);
+})();
+</script>
+<script>
+/* Fit the embedding frame to this page and adapt wording for touch screens */
+(function () {
+  var KEY = 'canneleHeight', last = 0;
+  function h() {
+    var b = document.body, cs = getComputedStyle(b);
+    return Math.ceil(b.getBoundingClientRect().height + parseFloat(cs.marginTop) + parseFloat(cs.marginBottom));
+  }
+  function send() { var v = h(); if (Math.abs(v - last) > 1) { last = v; var m = {}; m[KEY] = v; try { parent.postMessage(m, '*'); } catch (e) {} } }
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+  window.addEventListener('load', send); window.addEventListener('resize', send);
+  setTimeout(send, 300); setTimeout(send, 1500); send();
+  if (window.matchMedia && matchMedia('(pointer: coarse)').matches) {
+    document.documentElement.classList.add('touch');
+    var swap = function (el) { if (!el) return; var t = el.textContent, n = t.replace(/Double-click/g, 'Double-tap').replace(/double-click/g, 'double-tap').replace(/ or your arrow keys/g, ''); if (n !== t) el.textContent = n; };
+    document.querySelectorAll('.hint').forEach(function (el) { swap(el); new MutationObserver(function () { swap(el); }).observe(el, { childList: true, characterData: true, subtree: true }); });
+  }
 })();
 </script>
 </body>

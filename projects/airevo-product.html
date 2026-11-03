@@ -6,7 +6,8 @@
   <title>airevo product explorer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Pinyon+Script&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Pinyon+Script&family=IBM+Plex+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Pinyon+Script&family=IBM+Plex+Mono:wght@400;500&display=swap"></noscript>
   <style>
     /* airevo brand tokens */
     :root {
@@ -60,7 +61,7 @@
     @keyframes pulse { from { transform: scale(.8); opacity: 1; } to { transform: scale(1.5); opacity: 0; } }
 
     .mode-tag { position: absolute; left: 20px; top: 18px; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--rose-deep); z-index: 4; }
-    .lift { position: absolute; right: 20px; top: 44px; z-index: 4; text-align: right; opacity: 0; transition: opacity .4s; }
+    .lift { position: absolute; right: 20px; top: 44px; z-index: 4; text-align: right; opacity: 0; transition: opacity .4s; pointer-events: none; }
     .exploded .lift { opacity: 1; }
     .lift b { display: block; font-weight: 500; font-size: 40px; line-height: 1; color: var(--rose-deep); }
     .lift span { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
@@ -86,6 +87,7 @@
     @keyframes swap { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
     .intro { margin: 0; font-size: 17px; color: var(--muted); font-style: italic; }
     @media (prefers-reduced-motion: reduce) { .pin::after { animation: none; } * { transition-duration: .01ms !important; } }
+      html { touch-action: manipulation; }
   </style>
 </head>
 <body>
@@ -233,13 +235,14 @@
   document.getElementById('h-flat').addEventListener('click', function () { setFlat(true); });
 
   // ---------- product: gentle float; double-click (or double-tap) to take it apart ----------
-  var lastTap = 0;
-  hero.addEventListener('dblclick', function (e) { e.stopPropagation(); setExploded(true); });
+  var lastTap = 0, lastType = 'mouse';
+  document.addEventListener('pointerdown', function (e) { lastType = e.pointerType; }, true);
+  hero.addEventListener('dblclick', function (e) { e.stopPropagation(); if (lastType === 'mouse') setExploded(true); });
   hero.addEventListener('pointerup', function (e) {
     if (e.pointerType === 'mouse') return;
     e.stopPropagation(); var now = Date.now(); if (now - lastTap < 320) { setExploded(true); lastTap = 0; } else lastTap = now;
   });
-  stage.addEventListener('dblclick', function (e) { if (exploded && !e.target.closest('.pin')) setExploded(false); });
+  stage.addEventListener('dblclick', function (e) { if (lastType === 'mouse' && exploded && !e.target.closest('.pin')) setExploded(false); });
   // double tap on touch, exploded view → assemble
   var lastStageTap = 0;
   stage.addEventListener('pointerup', function (e) {
@@ -250,8 +253,27 @@
   idleCard();
   updateTag();
 
-  function report() { try { parent.postMessage({ airevoHeight: document.documentElement.scrollHeight }, '*'); } catch (e) {} }
+  function report() { try { parent.postMessage({ airevoHeight: Math.ceil(document.body.getBoundingClientRect().height) }, '*'); } catch (e) {} }
   report(); window.addEventListener('resize', report); new MutationObserver(report).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'hidden'] });
+})();
+</script>
+<script>
+/* Fit the embedding frame to this page and adapt wording for touch screens */
+(function () {
+  var KEY = 'airevoHeight', last = 0;
+  function h() {
+    var b = document.body, cs = getComputedStyle(b);
+    return Math.ceil(b.getBoundingClientRect().height + parseFloat(cs.marginTop) + parseFloat(cs.marginBottom));
+  }
+  function send() { var v = h(); if (Math.abs(v - last) > 1) { last = v; var m = {}; m[KEY] = v; try { parent.postMessage(m, '*'); } catch (e) {} } }
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+  window.addEventListener('load', send); window.addEventListener('resize', send);
+  setTimeout(send, 300); setTimeout(send, 1500); send();
+  if (window.matchMedia && matchMedia('(pointer: coarse)').matches) {
+    document.documentElement.classList.add('touch');
+    var swap = function (el) { if (!el) return; var t = el.textContent, n = t.replace(/Double-click/g, 'Double-tap').replace(/double-click/g, 'double-tap').replace(/ or your arrow keys/g, ''); if (n !== t) el.textContent = n; };
+    document.querySelectorAll('.hint').forEach(function (el) { swap(el); new MutationObserver(function () { swap(el); }).observe(el, { childList: true, characterData: true, subtree: true }); });
+  }
 })();
 </script>
 </body>
