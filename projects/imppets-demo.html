@@ -31,8 +31,9 @@
     .flowlist li.done { border-color: #8C87D6; color: #4E48A8; background: #ECEAFB; }
     .reset { align-self: flex-start; }
 
-    .phone-wrap { flex: 0 1 390px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-    .phone { width: min(390px, 100%); aspect-ratio: 390 / 812; background: #16161B; border-radius: 54px; padding: 12px; box-shadow: 0 40px 80px -30px rgba(40, 30, 90, .45); position: relative; }
+    .phone-wrap { flex: 0 1 390px; min-width: 0; width: 100%; max-width: 390px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .phone-fit { position: relative; width: 100%; min-width: 0; height: calc(812px * var(--s, 1)); }
+    .phone { position: absolute; left: 50%; top: 0; width: 390px; height: 812px; transform: translateX(-50%) scale(var(--s, 1)); transform-origin: top center; background: #16161B; border-radius: 54px; padding: 12px; box-shadow: 0 40px 80px -30px rgba(40, 30, 90, .45); position: relative; }
     .phone::before { content: ""; position: absolute; top: 22px; left: 50%; transform: translateX(-50%); width: 108px; height: 30px; background: #16161B; border-radius: 20px; z-index: 5; }
     .phone-hint { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
 
@@ -208,14 +209,14 @@
 
     <!-- ===== 右边：手机 ===== -->
     <div class="phone-wrap">
-      <div class="phone">
+      <div class="phone-fit" id="phone-fit"><div class="phone">
         <div class="app" id="app">
           <div class="status" aria-hidden="true"><span>9:41</span><span>●●● ▮</span></div>
           <div class="scr" id="scr"></div>
           <nav class="tabs" id="tabs" aria-label="App tabs"></nav>
           <div class="toast" id="toast" role="status"></div>
         </div>
-      </div>
+      </div></div>
       <span class="phone-hint">Tap around · everything is clickable</span>
     </div>
   </div>
@@ -515,6 +516,18 @@
     var swap = function (el) { if (!el) return; var t = el.textContent, n = t.replace(/Double-click/g, 'Double-tap').replace(/double-click/g, 'double-tap').replace(/ or your arrow keys/g, ''); if (n !== t) el.textContent = n; };
     document.querySelectorAll('.hint').forEach(function (el) { swap(el); new MutationObserver(function () { swap(el); }).observe(el, { childList: true, characterData: true, subtree: true }); });
   }
+})();
+</script>
+<script>
+/* Keep the phone mock-up at true phone proportions and shrink it to fit small screens */
+(function () {
+  var fit = document.getElementById('phone-fit');
+  function scale() {
+    var w = fit.clientWidth, k = window.innerWidth < 560 ? 0.8 : 1;
+    fit.style.setProperty('--s', Math.min(1, (w * k) / 390).toFixed(4));
+  }
+  scale(); window.addEventListener('resize', scale);
+  if (window.ResizeObserver) new ResizeObserver(scale).observe(fit);
 })();
 </script>
 </body>

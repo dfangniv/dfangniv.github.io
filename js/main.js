@@ -65,6 +65,31 @@
     index.addEventListener('mouseleave', function () { peek.classList.remove('on'); });
   }
 
+  // 小屏幕提醒：互动窗口在电脑或大窗口上体验更好
+  (function () {
+    var frames = document.querySelectorAll('.wrap iframe');
+    if (!frames.length || !window.matchMedia) return;
+    var mq = matchMedia('(max-width: 760px)');
+    var hidden = false;
+    try { hidden = sessionStorage.getItem('bigScreenNote') === 'off'; } catch (e) {}
+    var notes = [];
+    frames.forEach(function (f) {
+      var n = document.createElement('p');
+      n.className = 'big-screen-note mono';
+      n.setAttribute('role', 'note');
+      n.innerHTML = '<span aria-hidden="true">▭</span><span>Best on a computer or a larger window. You can still tap and drag here.</span><button type="button" aria-label="Hide this tip">×</button>';
+      n.querySelector('button').addEventListener('click', function () {
+        hidden = true; try { sessionStorage.setItem('bigScreenNote', 'off'); } catch (e) {}
+        notes.forEach(function (x) { x.hidden = true; });
+      });
+      f.parentNode.insertBefore(n, f);
+      notes.push(n);
+    });
+    function sync() { notes.forEach(function (x) { x.hidden = hidden || !mq.matches; }); }
+    sync();
+    if (mq.addEventListener) mq.addEventListener('change', sync); else if (mq.addListener) mq.addListener(sync);
+  })();
+
   // 复制邮箱按钮
   document.querySelectorAll('[data-copy]').forEach(function (btn) {
     btn.addEventListener('click', function () {

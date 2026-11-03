@@ -427,3 +427,10 @@ h1, h2, h3 { text-wrap: balance; }
 .folder-link::after { content: ""; position: absolute; inset: 0; }
 .folder-link i { font-style: normal; transition: transform .4s var(--ease); }
 .folder:hover .folder-link i, .folder-link:focus-visible i { transform: translate(3px, -3px); }
+
+/* ---------- small-screen tip above interactive frames ---------- */
+.big-screen-note { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; padding: 10px 12px; border: 1px solid var(--line); border-left: 2px solid var(--accent); background: var(--white); font-size: 11.5px; line-height: 1.45; color: var(--muted); letter-spacing: .02em; text-transform: none; }
+.big-screen-note[hidden] { display: none; }
+.big-screen-note > span:first-child { color: var(--accent); font-size: 15px; line-height: 1; }
+.big-screen-note > span:nth-child(2) { flex: 1; }
+.big-screen-note button { border: 0; background: none; font-size: 18px; line-height: 1; color: var(--muted); cursor: pointer; padding: 4px 6px; min-width: 32px; min-height: 32px; }
