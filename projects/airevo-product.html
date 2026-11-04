@@ -88,6 +88,9 @@
     .intro { margin: 0; font-size: 17px; color: var(--muted); font-style: italic; }
     @media (prefers-reduced-motion: reduce) { .pin::after { animation: none; } * { transition-duration: .01ms !important; } }
       html { touch-action: manipulation; }
+    /* stop mobile browsers from auto-inflating text inside this embedded frame */
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    body * { max-height: 1000000px; }
   </style>
 </head>
 <body>

@@ -45,6 +45,9 @@
     .read b.far { color: var(--accent); }
     .hint { margin: 10px 0 0; font-style: italic; color: var(--muted); font-size: 16px; }
       html { touch-action: manipulation; }
+    /* stop mobile browsers from auto-inflating text inside this embedded frame */
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    body * { max-height: 1000000px; }
   </style>
 </head>
 <body>

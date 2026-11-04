@@ -176,6 +176,9 @@
     .toast.on { opacity: 1; transform: none; }
     .toast b { color: var(--a-yolk); }
       html { touch-action: manipulation; }
+    /* stop mobile browsers from auto-inflating text inside this embedded frame */
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    body * { max-height: 1000000px; }
   </style>
 </head>
 <body>

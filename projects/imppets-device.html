@@ -109,6 +109,9 @@
     .counter b { color: var(--accent); font-weight: 500; }
     @media (prefers-reduced-motion: reduce) { .near .waves i { animation: none; } .dev.shake .scene { animation: none; } }
       html { touch-action: manipulation; }
+    /* stop mobile browsers from auto-inflating text inside this embedded frame */
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    body * { max-height: 1000000px; }
     @media (max-width: 760px) {
       .stage { min-height: 350px; }
       .phone-side { padding: 0 16px 20px; }

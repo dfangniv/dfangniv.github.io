@@ -41,6 +41,9 @@
     .toast { position: absolute; left: 50%; top: 18px; transform: translate(-50%, -10px); background: var(--cherry); color: #fff; font-family: var(--mono); font-size: 12px; padding: 8px 14px; border-radius: 999px; opacity: 0; transition: opacity .3s, transform .3s; pointer-events: none; }
     .toast.on { opacity: 1; transform: translate(-50%, 0); }
       html { touch-action: manipulation; }
+    /* stop mobile browsers from auto-inflating text inside this embedded frame */
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    body * { max-height: 1000000px; }
     @media (max-width: 480px) { .help { display: none; } .name b { font-size: 20px; } }
   </style>
 </head>
